@@ -13,7 +13,7 @@ Func ValidateSortingConditions()
 	LogInfo("=== Starting Pre-Sort Validation ===")
 	
 	; Check if in game
-	If Not Core_GetStatusInGame() Then
+	If Not Core_IsIngame() Then
 		LogError("Validation failed: Character must be logged in")
 		Return False
 	EndIf

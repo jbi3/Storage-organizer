@@ -20,9 +20,9 @@
 ; #INCLUDES# ====================================================================================================================
 #include "..\..\API\_GwAu3.au3"
 #include "Files\GUI.au3"
-#include "Files\SafetyValidator.au3"
-#include "Files\ItemClassifier.au3"
 #include "Files\SortEngine.au3"
+#include "Files\ItemClassifier.au3"
+#include "Files\SafetyValidator.au3"
 ; ===============================================================================================================================
 #EndRegion Includes
 
