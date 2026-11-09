@@ -1,3 +1,4 @@
 *.txt
 
-Docs/
+Docs/*
+!Docs/specs/

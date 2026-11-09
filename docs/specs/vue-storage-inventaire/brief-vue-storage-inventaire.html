@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr" data-prdview="brief:vue-storage-inventaire:2026-11-09" data-prdview-title="Vue du coffre et de l&#x27;inventaire" data-prdview-source="C:/Users/jeanb/Desktop/GW/GwAu3-main/Scripts/Storage-Organizer/.claude/worktrees/storage-inventory-ui-view-1c2f5a/docs/specs/vue-storage-inventaire/brief-vue-storage-inventaire.md (updated 2026-11-09)">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Vue du coffre et de l&#x27;inventaire</title>
+<!-- Généré par ~/.claude/skills/spec/brief_to_html.py depuis brief-vue-storage-inventaire.md. Ne pas modifier à la main : modifier le .md puis régénérer. -->
+<style>
+/* ---------- Tokens : noms shadcn, valeurs IEYASU (product/colors_and_type.css) ---------- */
+:root{
+  color-scheme: light;
+  --background:#fbfcfd;            /* neutral-990 */
+  --foreground:#191c1d;            /* neutral-100, on-surface */
+  --card:#ffffff;
+  --card-foreground:#191c1d;
+  --muted:#eff1f1;                 /* neutral-950 */
+  --muted-foreground:#5c5f60;      /* neutral-400 */
+  --primary:#35506b;               /* primary-400, teal ICPF */
+  --primary-hover:#4a6a8a;         /* primary-500 */
+  --primary-foreground:#ffffff;
+  --primary-soft:#dce7f1;          /* primary-950, primary-container */
+  --primary-soft-foreground:#16222e;
+  --accent:#f4f7fa;                /* primary-990 */
+  --secondary:#5b6670;             /* secondary-400 */
+  --secondary-soft:#e6ebf0;        /* secondary-950 */
+  --destructive:#b81d27;           /* error-400 */
+  --destructive-soft:#ffdad7;      /* error-900 */
+  --warning:#8f4e00;               /* warning-400, lisible sur fond clair */
+  --warning-soft:#ffede2;          /* warning-950 */
+  --success:#006e1c;               /* success-400 */
+  --success-soft:#c8ffc0;          /* success-950 */
+  --info:#0061a4;                  /* info-400 */
+  --info-soft:#eaf1ff;             /* info-950 */
+  --border:rgba(111,121,123,.22);  /* grey-border à 22 % */
+  --border-strong:#c4c7c7;         /* neutral-800 */
+  --ring:#4a6a8a;
+  --radius:8px;                    /* radius-md : cartes, conteneurs */
+  --radius-sm:4px;                 /* radius-sm : champs, alertes */
+  --radius-lg:16px;                /* radius-lg : dialogues */
+  --radius-pill:9999px;
+  --font-sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 1px 2px rgba(0,0,0,.3),0 2px 6px 2px rgba(0,0,0,.15);
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-8:48px;
+  --content-max:960px;
+  --text-max:72ch;
+}
+
+/* ---------- Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;font-family:var(--font-sans);font-size:15px;line-height:1.55;color:var(--foreground);background:var(--background);-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration-thickness:1px;text-underline-offset:2px}
+a:hover{color:var(--primary-hover)}
+img{max-width:100%;height:auto}
+code,kbd{font-family:var(--font-mono);font-size:.88em;background:var(--muted);padding:1px 5px;border-radius:var(--radius-sm)}
+pre{overflow-x:auto;background:var(--muted);padding:var(--space-3);border-radius:var(--radius-sm)}
+pre code{background:none;padding:0}
+hr{border:0;border-top:1px solid var(--border);margin:var(--space-5) 0}
+h1,h2,h3,h4{font-weight:500;line-height:1.25;margin:0;text-wrap:balance}
+h1{font-size:26px;font-weight:300;letter-spacing:-.3px}
+h2{font-size:20px}
+h3{font-size:17px}
+h4{font-size:15px;font-weight:700}
+p{margin:0 0 var(--space-3)}
+ul,ol{margin:0 0 var(--space-3);padding-left:1.4em}
+li{margin:0 0 var(--space-1)}
+li>ul,li>ol{margin-top:var(--space-1)}
+strong{font-weight:700}
+blockquote{margin:0 0 var(--space-4);padding:var(--space-3) var(--space-4);border-left:4px solid var(--primary);background:var(--accent);border-radius:0 var(--radius) var(--radius) 0}
+blockquote p:last-child{margin-bottom:0}
+.prose{max-width:var(--text-max)}
+.prose h2{margin:var(--space-5) 0 var(--space-3)}
+.prose h3{margin:var(--space-4) 0 var(--space-2)}
+.prose h4{margin:var(--space-3) 0 var(--space-2)}
+.muted{color:var(--muted-foreground)}
+.small{font-size:13px}
+.caption{font-size:12px;letter-spacing:.3px;color:var(--muted-foreground)}
+.label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-foreground)}
+.mono{font-family:var(--font-mono)}
+.nowrap{white-space:nowrap}
+.tabular{font-variant-numeric:tabular-nums}
+.wikilink{color:var(--primary);border-bottom:1px dotted var(--primary);cursor:help}
+
+/* ---------- Mise en page ---------- */
+.wrap{max-width:var(--content-max);margin:0 auto;padding-inline:var(--space-4)}
+.stack{display:flex;flex-direction:column;gap:var(--space-4)}
+.row{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.grid{display:grid;gap:var(--space-4);grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid>*{min-width:0}
+.section{padding-block:var(--space-5)}
+.section+.section{border-top:1px solid var(--border)}
+
+/* ---------- Header de page ---------- */
+.page-header{background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:var(--primary-foreground);padding-block:var(--space-5) var(--space-5)}
+.page-header h1{color:inherit}
+.page-header .lead{margin-top:var(--space-2);max-width:var(--text-max);opacity:.95}
+.page-header .row{margin-top:var(--space-3)}
+.page-header .badge{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
+.page-header a{color:#fff}
+
+/* ---------- Button ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 16px;border:1px solid transparent;border-radius:var(--radius-pill);font:inherit;font-size:14px;font-weight:500;letter-spacing:.1px;cursor:pointer;background:var(--primary);color:var(--primary-foreground);transition:background .15s,box-shadow .15s}
+.btn:hover{background:var(--primary-hover)}
+.btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.btn-outline{background:transparent;color:var(--primary);border-color:var(--primary)}
+.btn-outline:hover{background:var(--accent)}
+.btn-ghost{background:transparent;color:var(--primary)}
+.btn-ghost:hover{background:var(--accent)}
+.btn-sm{min-height:32px;padding:4px 12px;font-size:13px}
+.btn-light{background:#fff;color:var(--primary)}
+.btn-light:hover{background:var(--primary-soft)}
+
+/* ---------- Badge ---------- */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:var(--radius-pill);border:1px solid transparent;font-size:12px;font-weight:500;line-height:18px;white-space:nowrap;background:var(--primary-soft);color:var(--primary-soft-foreground)}
+.badge-secondary{background:var(--muted);color:var(--foreground)}
+.badge-outline{background:transparent;border-color:var(--border-strong);color:var(--foreground)}
+.badge-destructive{background:var(--destructive-soft);color:#410004}
+.badge-warning{background:var(--warning-soft);color:#4c2700}
+.badge-success{background:var(--success-soft);color:#002204}
+.badge-info{background:var(--info-soft);color:#001d36}
+
+/* ---------- Card ---------- */
+.card{background:var(--card);color:var(--card-foreground);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);min-width:0}
+.card-header{padding:var(--space-4) var(--space-4) 0;display:flex;flex-direction:column;gap:var(--space-1)}
+.card-title{font-size:17px;font-weight:500}
+.card-description{font-size:13px;color:var(--muted-foreground)}
+.card-content{padding:var(--space-4)}
+.card-footer{padding:0 var(--space-4) var(--space-4);display:flex;flex-wrap:wrap;gap:var(--space-2)}
+
+/* ---------- Tabs ---------- */
+.tabs-bar{position:sticky;top:0;z-index:20;background:var(--background);border-bottom:1px solid var(--border)}
+.tabs-list{display:flex;gap:var(--space-1);overflow-x:auto;scrollbar-width:none;padding-block:var(--space-2);-webkit-overflow-scrolling:touch}
+.tabs-list::-webkit-scrollbar{display:none}
+.tabs-trigger{flex:0 0 auto;min-height:36px;padding:6px 14px;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--muted-foreground);font:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap}
+.tabs-trigger:hover{background:var(--muted);color:var(--foreground)}
+.tabs-trigger[aria-selected="true"]{background:var(--primary);color:var(--primary-foreground)}
+.tabs-trigger:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.tabs-trigger .count{margin-left:6px;font-size:11px;opacity:.8}
+.tabs-content{display:none;padding-block:var(--space-4) var(--space-8)}
+.tabs-content[data-active]{display:block}
+
+/* ---------- Table ---------- */
+.table-wrap{overflow-x:auto;margin:0 0 var(--space-4);border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border)}
+th{background:var(--muted);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-foreground);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--accent)}
+td.check-cell{width:36px;padding-right:0}
+
+/* ---------- Alert ---------- */
+.alert{display:flex;flex-direction:column;gap:var(--space-1);padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin:0 0 var(--space-4)}
+.alert-title{font-weight:700;font-size:14px}
+.alert-description{font-size:14px}
+.alert-description p:last-child{margin:0}
+.alert-info{border-color:#9ecaff;background:var(--info-soft);color:#001d36}
+.alert-warning{border-color:#ffb77b;background:var(--warning-soft);color:#2e1500}
+.alert-destructive{border-color:#ffb3ae;background:var(--destructive-soft);color:#410004}
+.alert-success{border-color:#78dc77;background:var(--success-soft);color:#002204}
+
+/* ---------- Accordion ---------- */
+.accordion{display:flex;flex-direction:column;gap:var(--space-2);margin:0 0 var(--space-4)}
+.accordion-item{border:1px solid var(--border);border-radius:var(--radius);background:var(--card);min-width:0}
+.accordion-item>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);font-weight:500;font-size:15px}
+.accordion-item>summary::-webkit-details-marker{display:none}
+.accordion-item>summary::before{content:"›";flex:0 0 auto;width:14px;font-size:20px;line-height:1;color:var(--muted-foreground);transition:transform .15s;transform-origin:center}
+.accordion-item[open]>summary::before{transform:rotate(90deg)}
+.accordion-item>summary:hover{background:var(--accent);border-radius:var(--radius)}
+.accordion-body{padding:0 var(--space-4) var(--space-4);min-width:0}
+.accordion-body>:first-child{margin-top:0}
+.accordion-tools{display:flex;justify-content:flex-end;gap:var(--space-2);margin-bottom:var(--space-2)}
+
+/* ---------- Checkbox, note du lecteur ---------- */
+.check{display:flex;flex-direction:column;gap:var(--space-1);margin:0 0 var(--space-2)}
+.check label{display:flex;align-items:flex-start;gap:var(--space-2);cursor:pointer}
+.check input[type="checkbox"],td.check-cell input[type="checkbox"]{appearance:none;flex:0 0 auto;width:18px;height:18px;margin:2px 0 0;border:2px solid var(--border-strong);border-radius:var(--radius-sm);background:#fff;cursor:pointer;display:inline-grid;place-content:center}
+.check input[type="checkbox"]:checked,td.check-cell input[type="checkbox"]:checked{background:var(--primary);border-color:var(--primary)}
+.check input[type="checkbox"]:checked::after,td.check-cell input[type="checkbox"]:checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.check input[type="checkbox"]:focus-visible,td.check-cell input[type="checkbox"]:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.check.is-checked>label{color:var(--primary)}
+.note{margin-left:26px}
+.note>summary{list-style:none;cursor:pointer;font-size:12px;color:var(--muted-foreground);display:inline-flex;align-items:center;gap:4px}
+.note>summary::-webkit-details-marker{display:none}
+.note>summary::before{content:"+";font-weight:700}
+.note[open]>summary::before{content:"–"}
+.note.has-note>summary{color:var(--primary);font-weight:500}
+.textarea{display:block;width:100%;min-height:72px;margin-top:var(--space-1);padding:8px 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);font:inherit;font-size:14px;line-height:1.45;color:var(--foreground);background:#fff;resize:vertical}
+.textarea:focus{outline:2px solid var(--ring);outline-offset:1px;border-color:var(--ring)}
+li.check{display:block}
+li.check>label{display:flex}
+
+/* ---------- Marques ⚠️ ❓ (classes posées par le script) ---------- */
+.mark-warn{background:var(--warning-soft);border-radius:var(--radius-sm);padding:0 3px}
+.mark-q{background:var(--info-soft);border-radius:var(--radius-sm);padding:0 3px}
+
+/* ---------- Barre d'export (bas de page, fixe) ---------- */
+.export-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.06);padding:var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom,0px))}
+.export-bar .wrap{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.export-bar .status{font-size:13px;color:var(--muted-foreground);flex:1 1 160px;min-width:0}
+.export-fallback{display:none;width:100%;margin-top:var(--space-2)}
+.export-fallback.is-visible{display:block}
+body.has-export-bar{padding-bottom:88px}
+
+/* ---------- Guide de style : nuancier ---------- */
+.swatches{display:grid;gap:var(--space-2);grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+.swatch{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--card);font-size:12px}
+.swatch i{display:block;height:44px}
+.swatch b{display:block;padding:6px 8px 0;font-weight:500}
+.swatch span{display:block;padding:0 8px 6px;color:var(--muted-foreground);font-family:var(--font-mono);font-size:11px}
+
+@media (min-width:720px){
+  body{font-size:15.5px}
+  h1{font-size:32px}
+  h2{font-size:22px}
+  .card-content{padding:var(--space-5)}
+}
+@media print{
+  .tabs-bar,.export-bar{display:none}
+  .tabs-content{display:block;page-break-before:always}
+  body.has-export-bar{padding-bottom:0}
+}
+</style>
+<script>
+/* Runtime des vues HTML : onglets, accordéons, cases à cocher et notes du lecteur
+   (localStorage, par fichier), export « Copier comme prompt ». Sans dépendance. */
+(function () {
+  "use strict";
+  if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", init); } else { init(); }
+  function init() {
+  var root = document.documentElement;
+  var slug = root.getAttribute("data-prdview") || location.pathname.split("/").pop() || "prdview";
+  var storeKey = "prdview:" + slug;
+  var state = { checks: {}, notes: {}, general: "" };
+  try { var saved = JSON.parse(localStorage.getItem(storeKey) || "null"); if (saved) state = Object.assign(state, saved); } catch (e) {}
+  function save() { try { localStorage.setItem(storeKey, JSON.stringify(state)); } catch (e) {} }
+
+  /* ---- Onglets ---- */
+  var triggers = Array.prototype.slice.call(document.querySelectorAll(".tabs-trigger"));
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".tabs-content"));
+  function activate(id, push) {
+    if (!id || !document.getElementById("tab-" + id)) { id = triggers.length ? triggers[0].getAttribute("data-tab") : null; }
+    if (!id) return;
+    triggers.forEach(function (t) { t.setAttribute("aria-selected", t.getAttribute("data-tab") === id ? "true" : "false"); });
+    panels.forEach(function (p) { if (p.id === "tab-" + id) { p.setAttribute("data-active", ""); } else { p.removeAttribute("data-active"); } });
+    var t = document.querySelector('.tabs-trigger[data-tab="' + id + '"]');
+    if (t && t.scrollIntoView) { try { t.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) {} }
+    if (push) { try { history.replaceState(null, "", "#" + id); } catch (e) {} }
+  }
+  triggers.forEach(function (t, i) {
+    t.addEventListener("click", function () { activate(t.getAttribute("data-tab"), true); });
+    t.addEventListener("keydown", function (ev) {
+      var d = ev.key === "ArrowRight" ? 1 : ev.key === "ArrowLeft" ? -1 : 0;
+      if (!d) return;
+      ev.preventDefault();
+      var n = triggers[(i + d + triggers.length) % triggers.length];
+      n.focus(); activate(n.getAttribute("data-tab"), true);
+    });
+  });
+  if (triggers.length) { activate((location.hash || "").replace("#", ""), false); }
+  window.addEventListener("hashchange", function () { activate((location.hash || "").replace("#", ""), false); });
+
+  /* ---- Accordéons : tout déplier / replier ---- */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-accordion-toggle]"), function (btn) {
+    btn.addEventListener("click", function () {
+      var scope = btn.closest(".tabs-content") || document;
+      var items = scope.querySelectorAll(".accordion-item");
+      var anyClosed = Array.prototype.some.call(items, function (d) { return !d.open; });
+      Array.prototype.forEach.call(items, function (d) { d.open = anyClosed; });
+      btn.textContent = anyClosed ? "Tout replier" : "Tout déplier";
+    });
+  });
+
+  /* ---- Cases à cocher et notes ---- */
+  function labelOf(el) { return (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 160); }
+  function tabNameOf(el) {
+    var p = el.closest(".tabs-content");
+    return p ? (p.getAttribute("data-tab-label") || p.id.replace("tab-", "")) : "";
+  }
+  function makeNote(key) {
+    var d = document.createElement("details"); d.className = "note";
+    var s = document.createElement("summary"); s.textContent = "Note"; d.appendChild(s);
+    var ta = document.createElement("textarea"); ta.className = "textarea"; ta.rows = 3; ta.placeholder = "Remarque, question, décision…";
+    ta.value = state.notes[key] || "";
+    if (ta.value) { d.classList.add("has-note"); }
+    ta.addEventListener("input", function () {
+      if (ta.value.trim()) { state.notes[key] = ta.value; d.classList.add("has-note"); } else { delete state.notes[key]; d.classList.remove("has-note"); }
+      save(); refreshStatus();
+    });
+    d.appendChild(ta);
+    return d;
+  }
+  function makeCheckbox(key, host) {
+    var cb = document.createElement("input"); cb.type = "checkbox"; cb.setAttribute("data-key", key);
+    cb.checked = !!state.checks[key];
+    if (cb.checked && host) { host.classList.add("is-checked"); }
+    cb.addEventListener("change", function () {
+      if (cb.checked) { state.checks[key] = true; } else { delete state.checks[key]; }
+      if (host) { host.classList.toggle("is-checked", cb.checked); }
+      save(); refreshStatus();
+    });
+    return cb;
+  }
+  var items = [];
+  /* Blocs : <li data-checkable>, <h3 data-checkable>, tout élément data-checkable hors tableau */
+  Array.prototype.forEach.call(document.querySelectorAll("[data-checkable]:not(tr)"), function (el, i) {
+    var key = (el.closest(".tabs-content") ? el.closest(".tabs-content").id : "page") + ":" + (el.getAttribute("data-key") || i);
+    var label = labelOf(el);
+    var wrapper = document.createElement("label");
+    var cb = makeCheckbox(key, el);
+    var span = document.createElement("span");
+    while (el.firstChild) { span.appendChild(el.firstChild); }
+    wrapper.appendChild(cb); wrapper.appendChild(span);
+    el.classList.add("check"); el.appendChild(wrapper); el.appendChild(makeNote(key));
+    items.push({ key: key, label: label, tab: tabNameOf(el) });
+  });
+  /* Lignes de tableau : <tr data-checkable> → cellule de case + ligne de note */
+  Array.prototype.forEach.call(document.querySelectorAll("tr[data-checkable]"), function (tr, i) {
+    var key = (tr.closest(".tabs-content") ? tr.closest(".tabs-content").id : "page") + ":tr:" + (tr.getAttribute("data-key") || i);
+    var label = labelOf(tr);
+    var td = document.createElement("td"); td.className = "check-cell";
+    td.appendChild(makeCheckbox(key, tr));
+    tr.insertBefore(td, tr.firstChild);
+    var noteTr = document.createElement("tr"); noteTr.className = "note-row";
+    var noteTd = document.createElement("td"); noteTd.colSpan = tr.children.length; noteTd.style.paddingTop = "0";
+    var note = makeNote(key); note.classList.remove("note"); note.className = "note"; note.style.marginLeft = "0";
+    noteTd.appendChild(note); noteTr.appendChild(noteTd);
+    tr.parentNode.insertBefore(noteTr, tr.nextSibling);
+    items.push({ key: key, label: label, tab: tabNameOf(tr) });
+  });
+  /* En-têtes de tableaux cochables : cellule vide pour aligner */
+  Array.prototype.forEach.call(document.querySelectorAll("table"), function (table) {
+    if (!table.querySelector("tr[data-checkable]")) return;
+    var headRow = table.querySelector("thead tr");
+    if (headRow) { var th = document.createElement("th"); th.className = "check-cell"; th.setAttribute("aria-label", "Cocher"); headRow.insertBefore(th, headRow.firstChild); }
+  });
+
+  /* ---- Export « Copier comme prompt » ---- */
+  var general = document.getElementById("general-note");
+  if (general) {
+    general.value = state.general || "";
+    general.addEventListener("input", function () { state.general = general.value; save(); refreshStatus(); });
+  }
+  var status = document.getElementById("export-status");
+  function counts() {
+    var c = 0, n = 0;
+    items.forEach(function (it) { if (state.checks[it.key]) c++; if (state.notes[it.key]) n++; });
+    return { checked: c, notes: n + (state.general && state.general.trim() ? 1 : 0), total: items.length };
+  }
+  function refreshStatus() {
+    if (!status) return;
+    var k = counts();
+    status.textContent = k.checked + " coché" + (k.checked > 1 ? "s" : "") + " sur " + k.total + " · " + k.notes + " note" + (k.notes > 1 ? "s" : "");
+  }
+  function buildPrompt() {
+    var title = root.getAttribute("data-prdview-title") || document.title;
+    var source = root.getAttribute("data-prdview-source") || "";
+    var lines = [];
+    lines.push("Retours de lecture : " + title);
+    if (source) { lines.push("Source : " + source + " (le .md reste la source, la vue HTML est régénérée).") ; }
+    lines.push("");
+    var checked = items.filter(function (it) { return state.checks[it.key]; });
+    lines.push("Éléments cochés (" + checked.length + ") :");
+    if (!checked.length) { lines.push("- aucun"); }
+    checked.forEach(function (it) { lines.push("- [" + (it.tab || "page") + "] " + it.label); });
+    lines.push("");
+    var noted = items.filter(function (it) { return state.notes[it.key]; });
+    lines.push("Notes par élément (" + noted.length + ") :");
+    if (!noted.length) { lines.push("- aucune"); }
+    noted.forEach(function (it) { lines.push("- [" + (it.tab || "page") + "] " + it.label); lines.push("  Note : " + state.notes[it.key].replace(/\s*\n\s*/g, " / ")); });
+    lines.push("");
+    lines.push("Note générale :");
+    lines.push(state.general && state.general.trim() ? state.general.trim() : "(vide)");
+    lines.push("");
+    lines.push("Consigne : traite ces retours un par un, propose la modification du .md pour chacun et attends ma validation avant d'écrire.");
+    return lines.join("\n");
+  }
+  var copyBtn = document.getElementById("copy-prompt");
+  var fallback = document.getElementById("export-fallback");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", function () {
+      var text = buildPrompt();
+      var done = function () { copyBtn.textContent = "Copié ✓"; setTimeout(function () { copyBtn.textContent = "Copier comme prompt"; }, 1800); };
+      var fail = function () { if (fallback) { fallback.value = text; fallback.classList.add("is-visible"); fallback.focus(); fallback.select(); } };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, fail); } else { fail(); }
+    });
+  }
+  var resetBtn = document.getElementById("reset-notes");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function () {
+      if (resetBtn.getAttribute("data-armed") !== "1") { resetBtn.setAttribute("data-armed", "1"); resetBtn.textContent = "Confirmer l'effacement"; setTimeout(function () { resetBtn.removeAttribute("data-armed"); resetBtn.textContent = "Effacer mes retours"; }, 4000); return; }
+      state = { checks: {}, notes: {}, general: "" }; save(); location.reload();
+    });
+  }
+  if (document.querySelector(".export-bar")) { document.body.classList.add("has-export-bar"); }
+  refreshStatus();
+  }
+})();
+</script>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="wrap">
+    <p class="label" style="color:#fff;opacity:.85">Brief · Storage-Organizer</p>
+    <h1>Vue du coffre et de l&#x27;inventaire</h1>
+    <p class="lead small">Vue de lecture générée depuis <code style="background:rgba(255,255,255,.18);color:#fff">brief-vue-storage-inventaire.md</code>. Le fichier .md reste la source.</p>
+    <div class="row"><span class="badge">Storage-Organizer</span><span class="badge badge-secondary">cadrage</span><span class="badge">mis à jour 2026-11-09</span></div>
+  </div>
+</header>
+
+<div class="tabs-bar">
+  <div class="wrap">
+    <div class="tabs-list" role="tablist" aria-label="Sections du brief">
+      <button class="tabs-trigger" role="tab" data-tab="probleme" aria-selected="true">Problème</button><button class="tabs-trigger" role="tab" data-tab="cas-usage" aria-selected="false">Cas d&#x27;usage<span class="count">5</span></button><button class="tabs-trigger" role="tab" data-tab="avant-apres" aria-selected="false">Avant / Après</button><button class="tabs-trigger" role="tab" data-tab="scenarios" aria-selected="false">Scénarios</button><button class="tabs-trigger" role="tab" data-tab="taches" aria-selected="false">Tâches<span class="count">7</span></button><button class="tabs-trigger" role="tab" data-tab="questions" aria-selected="false">Questions<span class="count">18</span></button><button class="tabs-trigger" role="tab" data-tab="autres" aria-selected="false">Autres</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+<section class="tabs-content" id="tab-probleme" data-active data-tab-label="Problème"><section class="prose"><h2>Problème</h2><p>Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état avant ni l'état après. Pour savoir ce qu'il possède, en quelle quantité et comment c'est rangé, le joueur doit ouvrir le coffre en jeu et parcourir les onglets un par un puis ses 4 sacs, soit environ 5 minutes. Il rate les doublons répartis dans plusieurs onglets et ne connaît jamais ses totaux de matériaux.</p>
+</section><section class="prose"><h2>Utilisateurs</h2><div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Qui</th>
+<th>Fait quoi</th>
+<th>Décide / teste</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JB (joueur, auteur du script)</td>
+<td>Choisit un perso connecté et consulte coffre, coffre de matériaux et sacs dans la fenêtre du script</td>
+<td>Décide et teste, en jeu <span class="mark-warn">⚠️</span> À confirmer</td>
+</tr>
+<tr>
+<td>Autres joueurs GwAu3 (dépôt public)</td>
+<td>Hors cible pour cette version <span class="mark-warn">⚠️</span> À confirmer</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+</section></section><section class="tabs-content" id="tab-cas-usage" data-tab-label="Cas d&#x27;usage"><section class="prose"><h2>Cas d'usage</h2></section><h3 data-checkable data-key="cu1-voir-le-contenu-du-compte-comme-en-jeu">CU1 — Voir le contenu du compte comme en jeu</h3><ul>
+<li><strong>Déclencheur</strong> : JB veut savoir ce qu'il possède.</li>
+<li><strong>Parcours</strong> :
+<ol>
+<li>Il choisit le perso dans la liste.</li>
+<li>La vue affiche les 14 onglets du coffre (sacs internes 8 à 21 : sac 8 = onglet 1, …, sac 21 = onglet 14), le coffre de matériaux (sac 6, « Matériaux ») et les 4 sacs (sac à dos, bourse de ceinture, sac 1, sac 2), case par case, avec le même rendu qu'en jeu. Le nombre de cases de chaque sac est lu en jeu (<code>Item_GetBagInfo(..., &quot;Slots&quot;)</code>).</li>
+</ol>
+</li>
+<li><strong>Résultat</strong> : il voit ce qu'il a et où, en quelques secondes, sans ouvrir le coffre en jeu.</li>
+<li><strong>Fréquence</strong> : <span class="mark-warn">⚠️</span> À confirmer.</li>
+</ul>
+<h3 data-checkable data-key="cu2-connaitre-le-total-d-un-item">CU2 — Connaître le total d'un item</h3><ul>
+<li><strong>Déclencheur</strong> : JB veut savoir combien il possède d'un item (matériaux, doublons répartis dans plusieurs onglets).</li>
+<li><strong>Parcours</strong> :
+<ol>
+<li>Il regarde la liste des totaux par item, à côté de la grille.</li>
+</ol>
+</li>
+<li><strong>Résultat</strong> : le total cumulé coffre + matériaux + sacs du perso affiché, sans compter à la main. Seuls les items empilables sont totalisés, par ModelID et ExtraID (les teintures restent séparées par couleur) ; les items non empilables restent visibles dans la grille, hors totaux.</li>
+<li><strong>Fréquence</strong> : <span class="mark-warn">⚠️</span> À confirmer.</li>
+</ul>
+<h3 data-checkable data-key="cu3-voir-le-resultat-d-un-tri">CU3 — Voir le résultat d'un tri</h3><ul>
+<li><strong>Déclencheur</strong> : JB lance Start.</li>
+<li><strong>Parcours</strong> :
+<ol>
+<li>Le tri se termine.</li>
+<li>La vue se met à jour, que le tri ait réussi ou non ; en cas d'échec ou d'interruption, elle montre l'état réel avec la mention « tri interrompu ».</li>
+</ol>
+</li>
+<li><strong>Résultat</strong> : il voit le rangement obtenu au lieu de trier à l'aveugle.</li>
+<li><strong>Fréquence</strong> : à chaque tri.</li>
+</ul>
+<h3 data-checkable data-key="cu4-ouvrir-la-vue-quand-le-contenu-est-illisible">CU4 — Ouvrir la vue quand le contenu est illisible</h3><ul>
+<li><strong>Déclencheur</strong> : le perso n'est pas connecté, ou il est hors d'un avant-poste, ou le coffre n'est pas encore chargé <span class="mark-warn">⚠️</span> À confirmer.</li>
+<li><strong>Parcours</strong> :
+<ol>
+<li>JB choisit le perso.</li>
+<li>La vue affiche un message clair au lieu d'une grille vide ou fausse ; si une lecture enregistrée existe, elle affiche la dernière lecture datée (CU5).</li>
+</ol>
+</li>
+<li><strong>Résultat</strong> : il sait quoi faire (par exemple aller en avant-poste).</li>
+<li><strong>Fréquence</strong> : <span class="mark-warn">⚠️</span> À confirmer.</li>
+</ul>
+<h3 data-checkable data-key="cu5-consulter-hors-ligne">CU5 — Consulter hors ligne</h3><ul>
+<li><strong>Déclencheur</strong> : le jeu est arrêté.</li>
+<li><strong>Parcours</strong> :
+<ol>
+<li>JB lance le script.</li>
+<li>Il choisit un perso dans la liste, qui réunit les persos connectés et ceux qui ont un fichier de lecture.</li>
+<li>La vue affiche la dernière lecture, avec sa date et son heure.</li>
+</ol>
+</li>
+<li><strong>Résultat</strong> : il consulte son coffre et ses sacs sans le jeu.</li>
+<li><strong>Fréquence</strong> : <span class="mark-warn">⚠️</span> À confirmer.</li>
+</ul>
+</section><section class="tabs-content" id="tab-avant-apres" data-tab-label="Avant / Après"><section class="prose"><h2>Avant / Après</h2><div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Avant</th>
+<th>Après</th>
+<th>Bénéfice</th>
+<th>Comment on le voit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Savoir ce que j'ai et où</td>
+<td>Ouvrir le coffre en jeu, onglet par onglet, puis les 4 sacs : environ 5 min (estimation de JB)</td>
+<td>Choisir le perso, la vue s'affiche</td>
+<td>Quelques secondes au lieu d'environ 5 min</td>
+<td>Chronométrer une consultation <span class="mark-warn">⚠️</span> seuil à confirmer</td>
+</tr>
+<tr>
+<td>Total d'un item</td>
+<td>Inconnu, ou compté à la main</td>
+<td>Lu dans la liste des totaux</td>
+<td>Plus de doublons ratés</td>
+<td>Le total affiché correspond au compte fait en jeu sur 3 items témoins</td>
+</tr>
+<tr>
+<td>Après un tri</td>
+<td>Résultat invisible depuis le script</td>
+<td>Vue mise à jour à la fin du tri</td>
+<td>Fin du tri à l'aveugle</td>
+<td>Capture de la vue avant et après Start</td>
+</tr>
+<tr>
+<td>Jeu arrêté</td>
+<td>Impossible de savoir ce que j'ai</td>
+<td>Dernière lecture affichée, datée</td>
+<td>Consultation sans lancer le jeu</td>
+<td>Jeu fermé, la vue montre la même grille qu'à la dernière lecture</td>
+</tr>
+</tbody>
+</table></div>
+</section></section><section class="tabs-content" id="tab-scenarios" data-tab-label="Scénarios"><section class="prose"><h2>Scénarios</h2></section><div class="accordion-tools"><button class="btn btn-sm btn-ghost" type="button" data-accordion-toggle>Tout déplier</button></div><div class="accordion"><details class="accordion-item"><summary>S1 — Première consultation (CU1)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> un perso connecté, en avant-poste, avec des items dans le coffre, le coffre de matériaux et les sacs</li>
+<li><strong>When</strong> JB le choisit dans la liste</li>
+<li><strong>Then</strong> chaque onglet, le coffre de matériaux et les 4 sacs s'affichent case par case, à la même position qu'en jeu, avec la quantité sur les piles</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S2 — Total d'un item réparti (CU2)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> 250 Bones dans l'onglet 1, 40 dans l'onglet 3 et 10 dans le sac 1</li>
+<li><strong>When</strong> la vue est affichée</li>
+<li><strong>Then</strong> la liste des totaux indique « Bones : 300 »</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S3 — Mise à jour après tri (CU3)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> la vue affichée avant tri</li>
+<li><strong>When</strong> JB clique Start et le tri se termine sans erreur</li>
+<li><strong>Then</strong> la vue montre le nouveau rangement, et le tri lui-même n'a pas changé de comportement</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S4 — Contenu illisible (CU4)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> un perso en zone explorable, ou dont le coffre n'est pas chargé</li>
+<li><strong>When</strong> JB le choisit</li>
+<li><strong>Then</strong> un message dit pourquoi la lecture en direct est impossible et quoi faire, sans grille partielle ; si une lecture enregistrée existe, elle s'affiche avec sa date</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S5 — Lecture seule (CU1)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> la vue affichée</li>
+<li><strong>When</strong> JB clique sur une case ou la fait glisser</li>
+<li><strong>Then</strong> aucun item ne bouge en jeu</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S6 — Hors ligne (CU5)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> une lecture enregistrée pour le perso X, puis le jeu fermé</li>
+<li><strong>When</strong> JB lance le script et choisit X</li>
+<li><strong>Then</strong> la grille et les totaux de la dernière lecture s'affichent, avec « Lecture du 09/11 à 23:40 »</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S7 — Première fois hors ligne (CU5)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> aucune lecture enregistrée (ou un fichier illisible) et le jeu fermé</li>
+<li><strong>When</strong> JB lance le script</li>
+<li><strong>Then</strong> un message indique qu'il faut une première lecture, jeu lancé</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S8 — Tri interrompu (CU3)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> la vue affichée et un tri qui échoue (validation, restack ou déplacement)</li>
+<li><strong>When</strong> le tri s'arrête</li>
+<li><strong>Then</strong> la vue montre l'état réel du coffre avec la mention « tri interrompu »</li>
+</ul>
+</div></details><details class="accordion-item"><summary>S9 — Case illisible (CU1)</summary><div class="accordion-body prose"><ul>
+<li><strong>Given</strong> une case dont le pointeur est invalide ou dont le nom n'est pas décodé</li>
+<li><strong>When</strong> la vue est affichée</li>
+<li><strong>Then</strong> la case apparaît grisée avec « ? », les autres cases s'affichent normalement</li>
+</ul>
+</div></details></div></section><section class="tabs-content" id="tab-taches" data-tab-label="Tâches"><section class="prose"><h2>Tâches</h2><p>T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la réponse sur la source des icônes.</p>
+<ul>
+<li data-checkable data-key="taches-1">T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief</li>
+<li data-checkable data-key="taches-2">T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions</li>
+<li data-checkable data-key="taches-3">T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu</li>
+<li data-checkable data-key="taches-4">T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que <code>ValidateSortingConditions</code> ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle</li>
+<li data-checkable data-key="taches-5">T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus)</li>
+<li data-checkable data-key="taches-6">T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier <code>Snapshots\</code> à côté du script, ajouté au <code>.gitignore</code> ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date</li>
+<li data-checkable data-key="taches-7">T7 — Icônes comme en jeu : remplacer les cases colorées par les icônes des items, bloquée par la question ouverte sur la source des icônes · couvre CU1 · fini quand : une capture de la vue est visuellement comparable à la capture en jeu sur 1 onglet</li>
+</ul>
+</section></section><section class="tabs-content" id="tab-questions" data-tab-label="Questions"><section class="prose"><h2>Hors périmètre</h2><ul>
+<li data-checkable data-key="hors-perimetre-1">Déplacer des items depuis la vue (clic, glisser-déposer) : la vue est en lecture seule.</li>
+<li data-checkable data-key="hors-perimetre-2">Modifier le comportement du tri existant (restack, catégories, placement).</li>
+<li data-checkable data-key="hors-perimetre-3">Choisir l'ordre du tri : sujet séparé.</li>
+<li data-checkable data-key="hors-perimetre-4">Toute dépendance nouvelle : AutoIt natif uniquement.</li>
+<li data-checkable data-key="hors-perimetre-5">Objets équipés sur le perso.</li>
+<li data-checkable data-key="hors-perimetre-6">Total sur tous les persos du compte.</li>
+<li data-checkable data-key="hors-perimetre-7">Vue « avant » et vue « après » côte à côte : les captures suffisent pour la recette.</li>
+<li data-checkable data-key="hors-perimetre-8">Recherche, filtre et export de la liste des totaux.</li>
+</ul>
+</section><section class="prose"><h2>Questions ouvertes</h2><ul>
+<li data-checkable data-key="questions-ouvertes-1"><span class="mark-q">❓</span> JB décide et teste seul, en jeu ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-2"><span class="mark-q">❓</span> Les autres joueurs du dépôt public sont-ils dans la cible de cette version ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-3"><span class="mark-q">❓</span> Fréquence de consultation attendue (CU1, CU2, CU4) ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-4"><span class="mark-q">❓</span> « Quelques secondes » : quel seuil chiffré pour l'affichage complet ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-5"><span class="mark-q">❓</span> Source des icônes d'items et droits de les embarquer dans le dépôt (bloque T7) ? (JB, recherche)</li>
+<li data-checkable data-key="questions-ouvertes-6"><span class="mark-q">❓</span> Mise en page : agrandir la fenêtre actuelle (480 × 415) ou ouvrir une seconde fenêtre pour la vue ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-7"><span class="mark-q">❓</span> Conditions de lecture : le contenu du coffre est-il lisible hors avant-poste, et sans avoir ouvert le coffre Xunlai dans la session ? (test en jeu pendant T1)</li>
+<li data-checkable data-key="questions-ouvertes-8"><span class="mark-q">❓</span> Fichier de lecture : un fichier par perso qui garde aussi le coffre lu ce jour-là (proposé), ou un fichier coffre par compte plus un fichier sacs par perso ? Le coffre Xunlai est partagé par le compte, les sacs sont propres à chaque perso. (JB)</li>
+<li data-checkable data-key="questions-ouvertes-9"><span class="mark-q">❓</span> Sac d'équipement et objets non réclamés : inclus dans la vue ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-10"><span class="mark-q">❓</span> Le nom d'item se décode en asynchrone (<code>Item_GetItemInfoByPtr</code>, cas <code>&quot;Name&quot;</code>) : délai acceptable pour un coffre plein ? (mesure pendant T1)</li>
+</ul>
+</section></section><section class="tabs-content" id="tab-autres" data-tab-label="Autres"><section class="prose"><h2>Cadrage : réponses de l'interview</h2><p><strong>2026-11-09</strong></p>
+<ul>
+<li><strong>Q1 Problème</strong> : « Le tri est à l'aveugle, et je n'ai pas d'idée de ce que j'ai et dans quelle quantité et comment sont rangées les choses sans tout parcourir. »</li>
+<li><strong>Q2 Pour qui</strong> : « Moi d'abord. »</li>
+<li><strong>Q3 Aujourd'hui</strong> : « J'ouvre le coffre en jeu et je passe les onglets un par un, puis mes 4 sacs. Environ 5 minutes. Je rate des doublons rangés dans des onglets différents et je ne connais jamais mes totaux de matériaux. »</li>
+<li><strong>Q4 Demain</strong> : « Je choisis mon perso et je vois le coffre et les sacs comme en jeu, avec un total par item. Je vois en quelques secondes ce que j'ai et où, sans ouvrir le jeu. L'ordre du tri est un autre sujet. Une vue complète dans l'UI avec le même style visuel qu'en jeu. » Précision : la lecture en direct exige le jeu lancé (GwAu3 lit la mémoire du client) ; « sans ouvrir le jeu » est couvert par la consultation hors ligne (CU5).</li>
+<li><strong>Q5 Hors périmètre et contraintes</strong> : « Pas de clic ni de glisser-déposer pour déplacer les items depuis la vue : lecture seule. Ne pas casser le tri existant. AutoIt natif, sans dépendance nouvelle. Le coffre de matériaux est inclus. »</li>
+<li><strong>Ajout</strong> : « Je veux pouvoir conserver la dernière liste hors ligne pour consulter l'inventaire et storage une fois le jeu arrêté. »</li>
+</ul>
+<p><strong>2026-11-09, challenge (spec-challenger)</strong> : JB retient toutes les propositions.</p>
+<ol>
+<li>Persos hors ligne : la liste réunit les persos connectés et ceux qui ont un fichier de lecture ; sans l'un ni l'autre, message S7.</li>
+<li>Sacs : sac à dos, bourse de ceinture, sac 1, sac 2 ; objets équipés hors périmètre.</li>
+<li>Onglets : sac 8 = onglet 1, …, sac 21 = onglet 14 ; sac 6 = « Matériaux » ; cases lues en jeu, colonnes relevées sur capture pendant T2.</li>
+<li>Totaux : items empilables seulement, par ModelID et ExtraID.</li>
+<li>Totaux du perso affiché ; total multi-persos hors périmètre.</li>
+<li>Tri en échec : relecture et mention « tri interrompu » ; vue avant/après côte à côte hors périmètre.</li>
+<li>T4 reprend <code>ValidateSortingConditions</code> ; critère « coffre non chargé » fixé après T1.</li>
+<li>Fichier : <code>Snapshots\</code> à côté du script, gitignoré, INI par perso, fichier illisible = absent.</li>
+<li>« Environ 5 min » est une estimation de JB ; la durée de lecture est mesurée pendant T1.</li>
+<li>Case illisible grisée avec « ? » ; T1 à T6 en un lot, dans l'ordre, sans échéance ; « log identique » = mêmes lignes, horodatages exclus.</li>
+</ol>
+<p><strong>2026-11-08</strong> (note d'origine, session Item-spammer) : vue du storage et de l'inventaire identique à la vue en jeu, pour mieux voir le tri ; choix de l'ordre du tri et du placement final dans les stockages.</p>
+</section></section>
+<section class="section">
+  <div class="prose">
+    <h2>Note générale</h2>
+    <textarea class="textarea" id="general-note" rows="4" placeholder="Remarque d'ensemble sur le brief…"></textarea>
+    <p class="small muted" style="margin-top:var(--space-2)">Cases cochées et notes restent dans ce navigateur. « Copier comme prompt » les assemble en un texte à coller dans la session.</p>
+  </div>
+</section>
+</main>
+
+<div class="export-bar">
+  <div class="wrap">
+    <span class="status" id="export-status"></span>
+    <button class="btn btn-sm btn-ghost" type="button" id="reset-notes">Effacer mes retours</button>
+    <button class="btn btn-sm" type="button" id="copy-prompt">Copier comme prompt</button>
+    <textarea class="textarea export-fallback" id="export-fallback" rows="6" readonly aria-label="Texte à copier"></textarea>
+  </div>
+</div>
+
+</body>
+</html>
