@@ -1,7 +1,7 @@
 ---
 sujet: vue-storage-inventaire
 projet: Storage-Organizer
-statut: cadrage
+statut: en-cours
 created: 2026-11-09
 updated: 2026-11-09
 ---
@@ -121,7 +121,7 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 
 T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la réponse sur la source des icônes.
 
-- [ ] T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief
+- [x] T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief · ✅ 2026-11-09 : dump conforme au jeu, 332 items en 9,8 s (voir « Mesures T1 »)
 - [ ] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions
 - [ ] T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu
 - [ ] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que `ValidateSortingConditions` ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle
@@ -148,10 +148,11 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - ❓ « Quelques secondes » : quel seuil chiffré pour l'affichage complet ? (JB)
 - ❓ Source des icônes d'items et droits de les embarquer dans le dépôt (bloque T7) ? (JB, recherche)
 - ❓ Mise en page : agrandir la fenêtre actuelle (480 × 415) ou ouvrir une seconde fenêtre pour la vue ? (JB)
-- ❓ Conditions de lecture : le contenu du coffre est-il lisible hors avant-poste, et sans avoir ouvert le coffre Xunlai dans la session ? (test en jeu pendant T1)
+- ✅ Conditions de lecture : le coffre se lit en zone explorable et sans avoir ouvert le coffre Xunlai depuis la connexion (T1, 2026-11-09).
 - ❓ Fichier de lecture : un fichier par perso qui garde aussi le coffre lu ce jour-là (proposé), ou un fichier coffre par compte plus un fichier sacs par perso ? Le coffre Xunlai est partagé par le compte, les sacs sont propres à chaque perso. (JB)
 - ❓ Sac d'équipement et objets non réclamés : inclus dans la vue ? (JB)
-- ❓ Le nom d'item se décode en asynchrone (`Item_GetItemInfoByPtr`, cas `"Name"`) : délai acceptable pour un coffre plein ? (mesure pendant T1)
+- ✅ Durée de lecture : 332 items en 9,8 s, stable sur 3 lectures (environ 29 ms par item, décodage des noms compris) (T1, 2026-11-09).
+- ❓ 9,8 s en direct : acceptable, ou faut-il afficher la grille au fur et à mesure ? (JB, au moment de T2)
 
 ## Cadrage : réponses de l'interview
 
@@ -175,5 +176,12 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 8. Fichier : `Snapshots\` à côté du script, gitignoré, INI par perso, fichier illisible = absent.
 9. « Environ 5 min » est une estimation de JB ; la durée de lecture est mesurée pendant T1.
 10. Case illisible grisée avec « ? » ; T1 à T6 en un lot, dans l'ordre, sans échéance ; « log identique » = mêmes lignes, horodatages exclus.
+
+**2026-11-09, mesures T1** (perso Heal Arcadium, bouton Read, 3 lectures : avant-poste, zone explorable, après reconnexion sans ouvrir le coffre) :
+- Dump conforme au jeu sur 3 onglets et 1 sac (vérifié par JB).
+- 332 items en 9 784 à 9 849 ms ; contenu identique dans les 3 situations.
+- Cases : 25 par onglet, 42 pour le coffre de matériaux (positions fixes, avec des trous : cases 8, 19, 29, 32…), 20 pour le sac à dos, 10 pour la bourse de ceinture, 15 pour les sacs 1 et 2.
+- `Name` donne le nom sans la quantité. Certains noms portent des balises de couleur du jeu (`<c=#00FF00>Green Rock Candy</c>`, `<c=@ItemRare>Gold Zaishen Coin</c>`) à retirer à l'affichage (T2). Les inscriptions model 19123 sortent « Unknown ».
+- Rareté : 2621 blanc, 2623 bleu, 2624 or, 2627 vert (constantes `$GC_I_RARITY_*`) ; les inscriptions renvoient 33025, valeur hors constantes : couleur par défaut à prévoir (T2).
 
 **2026-11-08** (note d'origine, session Item-spammer) : vue du storage et de l'inventaire identique à la vue en jeu, pour mieux voir le tri ; choix de l'ordre du tri et du placement final dans les stockages.
