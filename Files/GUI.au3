@@ -15,6 +15,9 @@
 Global $g_hGUI = 0
 Global $g_cmbCharacter = 0
 Global $g_cmbPlacement = 0
+Global $g_chkStorage = 0
+Global $g_chkInventory = 0
+Global $g_chkDepositMaterials = 0
 Global $g_lblStatus = 0
 Global $g_prgProgress = 0
 Global $g_lblProgress = 0
@@ -39,7 +42,7 @@ Global Const $PLACEMENT_FREE_AT_START = "Free slots at the start (items up to th
 ; ===============================================================================
 Func CreateGUI()
 	; Main window
-	$g_hGUI = GUICreate($SCRIPT_NAME, 480, 415, -1, -1, BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_MINIMIZEBOX))
+	$g_hGUI = GUICreate($SCRIPT_NAME, 480, 495, -1, -1, BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_MINIMIZEBOX))
 	
 	; Character section
 	GUICtrlCreateGroup("Character", 20, 10, 445, 50)
@@ -49,22 +52,30 @@ Func CreateGUI()
 	$g_btnStart = GUICtrlCreateButton("Start", 400, 26, 55, 28)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
+	; Zones section - what to sort
+	GUICtrlCreateGroup("Zones", 20, 70, 445, 50)
+	$g_chkStorage = GUICtrlCreateCheckbox("Xunlai storage", 30, 90, 120, 20)
+	GUICtrlSetState($g_chkStorage, $GUI_CHECKED)
+	$g_chkInventory = GUICtrlCreateCheckbox("Inventory (backpack, belt pouch, bags 1-2)", 160, 90, 295, 20)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
+	
 	; Placement section - where the free slots go after sorting
-	GUICtrlCreateGroup("Placement", 20, 70, 445, 50)
-	$g_cmbPlacement = GUICtrlCreateCombo("", 30, 88, 425, 25, $CBS_DROPDOWNLIST)
+	GUICtrlCreateGroup("Placement", 20, 125, 445, 72)
+	$g_cmbPlacement = GUICtrlCreateCombo("", 30, 143, 425, 25, $CBS_DROPDOWNLIST)
 	GUICtrlSetData($g_cmbPlacement, $PLACEMENT_FREE_AT_END & "|" & $PLACEMENT_FREE_AT_START, $PLACEMENT_FREE_AT_END)
+	$g_chkDepositMaterials = GUICtrlCreateCheckbox("Deposit common and rare materials to the material storage", 30, 171, 425, 20)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
 	; Status section - status text, progress bar, and percentage
-	GUICtrlCreateGroup("Status", 20, 125, 445, 45)
-	$g_lblStatus = GUICtrlCreateLabel("Ready to sort", 30, 145, 165, 20)
-	$g_prgProgress = GUICtrlCreateProgress(205, 146, 150, 16)
-	$g_lblProgress = GUICtrlCreateLabel("0% (0/0)", 358, 145, 97, 20, $SS_RIGHT)
+	GUICtrlCreateGroup("Status", 20, 205, 445, 45)
+	$g_lblStatus = GUICtrlCreateLabel("Ready to sort", 30, 225, 165, 20)
+	$g_prgProgress = GUICtrlCreateProgress(205, 226, 150, 16)
+	$g_lblProgress = GUICtrlCreateLabel("0% (0/0)", 358, 225, 97, 20, $SS_RIGHT)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
 	; Log section
-	GUICtrlCreateGroup("Log", 20, 180, 445, 215)
-	$g_edtLog = GUICtrlCreateEdit("", 30, 200, 425, 185, BitOR($ES_MULTILINE, $ES_READONLY, $ES_AUTOVSCROLL, $WS_VSCROLL))
+	GUICtrlCreateGroup("Log", 20, 260, 445, 215)
+	$g_edtLog = GUICtrlCreateEdit("", 30, 280, 425, 185, BitOR($ES_MULTILINE, $ES_READONLY, $ES_AUTOVSCROLL, $WS_VSCROLL))
 	GUICtrlSetLimit($g_edtLog, 2000000) ; A full account dump exceeds the default edit limit
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
@@ -111,6 +122,11 @@ EndFunc
 ; Event: Start button clicked
 ; ===============================================================================
 Func OnStartClick()
+	If GUICtrlRead($g_chkStorage) <> $GUI_CHECKED And GUICtrlRead($g_chkInventory) <> $GUI_CHECKED Then
+		MsgBox(16, "Error", "Please check at least one zone to sort!")
+		Return
+	EndIf
+
 	If Not ConnectToSelectedChar() Then Return
 
 	UpdateStatus("Starting sort...")
@@ -119,6 +135,9 @@ Func OnStartClick()
 	GUICtrlSetState($g_btnStart, $GUI_DISABLE)
 	GUICtrlSetState($g_cmbCharacter, $GUI_DISABLE)
 	GUICtrlSetState($g_cmbPlacement, $GUI_DISABLE)
+	GUICtrlSetState($g_chkStorage, $GUI_DISABLE)
+	GUICtrlSetState($g_chkInventory, $GUI_DISABLE)
+	GUICtrlSetState($g_chkDepositMaterials, $GUI_DISABLE)
 	
 	$g_bSortRunning = True
 	
@@ -184,11 +203,12 @@ Func DoSortStep()
 	AdlibUnRegister("DoSortStep")
 	
 	; Execute the sort
-	Local $bSuccess = SortXunlaiStorage(GUICtrlRead($g_cmbPlacement) = $PLACEMENT_FREE_AT_START)
-	
+	Local $bSuccess = SortZones(GUICtrlRead($g_chkStorage) = $GUI_CHECKED, GUICtrlRead($g_chkInventory) = $GUI_CHECKED, _
+		GUICtrlRead($g_cmbPlacement) = $PLACEMENT_FREE_AT_START, GUICtrlRead($g_chkDepositMaterials) = $GUI_CHECKED)
+
 	If $bSuccess Then
 		UpdateStatus("Sorting complete!")
-		LogInfo("✓ Storage organized successfully!")
+		LogInfo("✓ Items organized successfully!")
 	Else
 		UpdateStatus("Sort failed - see log for details")
 		LogError("Sort operation failed")
@@ -207,6 +227,9 @@ Func FinishSort()
 	GUICtrlSetState($g_btnStart, $GUI_ENABLE)
 	GUICtrlSetState($g_cmbCharacter, $GUI_ENABLE)
 	GUICtrlSetState($g_cmbPlacement, $GUI_ENABLE)
+	GUICtrlSetState($g_chkStorage, $GUI_ENABLE)
+	GUICtrlSetState($g_chkInventory, $GUI_ENABLE)
+	GUICtrlSetState($g_chkDepositMaterials, $GUI_ENABLE)
 EndFunc
 
 ; ===============================================================================

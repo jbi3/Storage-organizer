@@ -3,7 +3,7 @@
 
 ; ===============================================================================
 ; Sort Engine Module
-; Core sorting algorithm for Xunlai storage
+; Core sorting algorithm for Xunlai storage and character inventory
 ; ===============================================================================
 
 ; Configuration
@@ -12,6 +12,7 @@ Global Const $STORAGE_BAG_MIN = 8        ; First storage bag
 Global Const $STORAGE_BAG_MAX = 21       ; Last storage bag
 Global Const $MAX_STACK_SIZE = 250       ; Game rule: identical stackable items stack up to 250
 Global Const $ITEM_MOVE_TIMEOUT_MS = 1500 ; Max wait for the game to confirm a restack move
+Global Const $MATERIAL_DEPOSIT_TIMEOUT_MS = 3000 ; Max wait for the game to empty the inventory slots after a deposit
 
 ; State variables
 Global $g_aItemList[0][6]         ; 2D Array: [pItem, category, currentBag, currentSlot, targetBag, targetSlot]
@@ -23,39 +24,64 @@ Global Enum $COL_POINTER = 0, $COL_CATEGORY, $COL_CURRENT_BAG, $COL_CURRENT_SLOT
 
 ; ===============================================================================
 ; Main sorting function
+; Sorts the checked zones; each zone is restacked and sorted on its own (items never cross between them)
 ; ===============================================================================
-Func SortXunlaiStorage($bFreeSlotsAtStart = False)
+Func SortZones($bStorage, $bInventory, $bFreeSlotsAtStart = False, $bDepositMaterials = False)
 	LogInfo("=== Storage Organizer ===")
 	
-	; Reset state
-	$g_iProcessedItems = 0
-	
-	; Pre-sort validation
-	If Not ValidateSortingConditions() Then
+	; Pre-sort validation (the material deposit uses the Xunlai storage, which needs an outpost)
+	If Not ValidateSortingConditions($bStorage Or $bDepositMaterials) Then
 		LogError("Pre-sort validation failed")
 		Return False
 	EndIf
 	
-	; Pre-pass: merge incomplete stacks, inventory and storage separately (items never cross between them)
-	LogInfo("Restacking inventory and storage...")
 	Local $aInventoryBags[4] = [$GC_I_INVENTORY_BACKPACK, $GC_I_INVENTORY_BELT_POUCH, $GC_I_INVENTORY_BAG1, $GC_I_INVENTORY_BAG2]
 	Local $aStorageBags[$STORAGE_BAG_MAX - $STORAGE_BAG_MIN + 1]
 	For $i = 0 To UBound($aStorageBags) - 1
 		$aStorageBags[$i] = $STORAGE_BAG_MIN + $i
 	Next
-	If Not RestackBags($aInventoryBags, "Inventory") Or Not RestackBags($aStorageBags, "Storage") Then
-		LogError("Restack failed")
+	
+	; Optional pre-pass: free space by sending the materials to the material storage
+	If $bDepositMaterials Then
+		LogInfo("Depositing materials to the material storage...")
+		UpdateStatus("Depositing materials...")
+		If Not DepositMaterials($aInventoryBags, $aStorageBags) Then
+			LogError("Material deposit failed")
+			Return False
+		EndIf
+		UpdateStatus("Sorting...")
+	EndIf
+	
+	If $bInventory And Not SortBags($aInventoryBags, "Inventory", $bFreeSlotsAtStart) Then Return False
+	If $bStorage And Not SortBags($aStorageBags, "Storage", $bFreeSlotsAtStart) Then Return False
+	
+	Return True
+EndFunc
+
+; ===============================================================================
+; Restack then sort the given bags ($sZone is only used in the log)
+; ===============================================================================
+Func SortBags($aBags, $sZone, $bFreeSlotsAtStart)
+	LogInfo("=== " & $sZone & " ===")
+	
+	; Reset state
+	$g_iProcessedItems = 0
+	
+	; Pre-pass: merge incomplete stacks
+	LogInfo("Restacking " & $sZone & "...")
+	If Not RestackBags($aBags, $sZone) Then
+		LogError($sZone & " restack failed")
 		Return False
 	EndIf
 	
-	; Step 1: Scan all storage items
-	LogInfo("Step 1: Scanning storage items...")
-	If Not ScanStorageItems() Then
-		LogError("Failed to scan storage items")
-		Return False
+	; Step 1: Scan all items of the zone
+	LogInfo("Step 1: Scanning " & $sZone & " items...")
+	If Not ScanBagItems($aBags) Then
+		LogWarning($sZone & " is empty - nothing to sort")
+		Return True
 	EndIf
 	
-	LogInfo("Found " & $g_iTotalItems & " items in storage")
+	LogInfo("Found " & $g_iTotalItems & " items in " & $sZone)
 	
 	; Step 2: Categorize items
 	LogInfo("Step 2: Categorizing items...")
@@ -67,7 +93,7 @@ Func SortXunlaiStorage($bFreeSlotsAtStart = False)
 	
 	; Step 4: Calculate target positions
 	LogInfo("Step 4: Calculating target positions...")
-	CalculateTargetPositions($bFreeSlotsAtStart)
+	CalculateTargetPositions($aBags, $bFreeSlotsAtStart)
 	
 	; Step 5: Move items to target positions
 	LogInfo("Step 5: Moving items to sorted positions...")
@@ -76,19 +102,20 @@ Func SortXunlaiStorage($bFreeSlotsAtStart = False)
 		Return False
 	EndIf
 	
-	LogInfo("=== Sorting Complete ===")
+	LogInfo("=== " & $sZone & " Sorting Complete ===")
 	LogInfo("Total items processed: " & $g_iProcessedItems & "/" & $g_iTotalItems)
 	Return True
 EndFunc
 
 ; ===============================================================================
-; Scan all storage bags and collect item data
+; Scan the given bags and collect item data
 ; ===============================================================================
-Func ScanStorageItems()
+Func ScanBagItems($aBags)
 	ReDim $g_aItemList[0][6]
 	$g_iTotalItems = 0
 	
-	For $iBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
+	For $b = 0 To UBound($aBags) - 1
+		Local $iBag = $aBags[$b]
 		Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 		If $iMaxSlots = 0 Then ContinueLoop
 		
@@ -207,26 +234,28 @@ EndFunc
 ; Calculate target positions for each item (front-to-back packing)
 ; $bFreeSlotsAtStart: skip the free slots first, so the items end at the last slot
 ; ===============================================================================
-Func CalculateTargetPositions($bFreeSlotsAtStart = False)
-	Local $iBag = $STORAGE_BAG_MIN
+Func CalculateTargetPositions($aBags, $bFreeSlotsAtStart = False)
+	Local $iBagIndex = 0
+	Local $iBag = $aBags[$iBagIndex]
 	Local $iSlot = 1
 	Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 	
 	; Number of free slots to leave before the first item
 	Local $iSkip = 0
 	If $bFreeSlotsAtStart Then
-		For $iCountBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
-			$iSkip += Item_GetBagInfo($iCountBag, "Slots")
+		For $b = 0 To UBound($aBags) - 1
+			$iSkip += Item_GetBagInfo($aBags[$b], "Slots")
 		Next
 		$iSkip -= $g_iTotalItems
 	EndIf
 	
 	For $i = 0 To $g_iTotalItems - 1
 		; Find next available slot
-		While $iBag <= $STORAGE_BAG_MAX
+		While $iBagIndex < UBound($aBags)
 			If $iSlot > $iMaxSlots Then
-				$iBag += 1
-				If $iBag > $STORAGE_BAG_MAX Then ExitLoop
+				$iBagIndex += 1
+				If $iBagIndex >= UBound($aBags) Then ExitLoop
+				$iBag = $aBags[$iBagIndex]
 				$iSlot = 1
 				$iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 				If $iMaxSlots = 0 Then ContinueLoop
@@ -377,6 +406,138 @@ Func RestackBags($aBags, $sZone)
 
 	LogInfo($sZone & " restack done: " & $iMoves & " move(s), " & $iSlotsFreed & " slot(s) freed")
 	Return True
+EndFunc
+
+; ===============================================================================
+; Material deposit
+; Sends the common and rare materials of the inventory and of the Xunlai storage to the material storage
+; The game's own "deposit all materials" only reads the inventory: storage materials transit through
+; the free inventory slots, then the game places them in the right material slot
+; A stack that does not fit (material storage full for it) goes back to its storage slot
+; Returns True on success, False if the game did not confirm a move
+; ===============================================================================
+Func DepositMaterials($aInventoryBags, $aStorageBags)
+	; Inventory materials: the game deposits them directly, leftovers stay in the inventory
+	Local $aInvStacks = FindMaterialStacks($aInventoryBags, "|")
+	If UBound($aInvStacks) > 0 Then
+		If Not Item_DepositAllMaterials() Then LogWarning("Game refused the material deposit (error " & @error & ")")
+		Local $iKept = WaitForSlotsEmpty($aInvStacks)
+		LogInfo("Inventory: " & (UBound($aInvStacks) - $iKept) & " material stack(s) deposited")
+		If $iKept > 0 Then LogWarning("Inventory: " & $iKept & " material stack(s) kept, material storage full")
+	EndIf
+
+	; Storage materials: transit through the free inventory slots, then deposit
+	Local $sFullModels = "|" ; ModelIDs that no longer fit in the material storage
+	Local $iDeposited = 0
+	Local $iReturned = 0
+	While True
+		Local $aStacks = FindMaterialStacks($aStorageBags, $sFullModels)
+		If UBound($aStacks) = 0 Then ExitLoop
+
+		Local $aFree = FindFreeSlots($aInventoryBags)
+		If UBound($aFree) = 0 Then
+			LogWarning("Storage: no free inventory slot, " & UBound($aStacks) & " material stack(s) left in storage")
+			ExitLoop
+		EndIf
+
+		; As many stacks as free inventory slots go to the inventory
+		Local $iCount = UBound($aStacks)
+		If UBound($aFree) < $iCount Then $iCount = UBound($aFree)
+		For $i = 0 To $iCount - 1
+			Item_MoveItem(Item_GetItemBySlot($aStacks[$i][0], $aStacks[$i][1]), $aFree[$i][0], $aFree[$i][1])
+			If Not WaitForSlotInfo($aFree[$i][0], $aFree[$i][1], "ModelID", $aStacks[$i][2]) Then
+				LogWarning("Material deposit stopped, move to inventory not confirmed (ModelID: " & $aStacks[$i][2] & ")")
+				Return False
+			EndIf
+			Sleep($ITEM_MOVE_DELAY_MS)
+		Next
+
+		If Not Item_DepositAllMaterials() Then LogWarning("Game refused the material deposit (error " & @error & ")")
+		WaitForSlotsEmpty($aFree, $iCount)
+
+		; Stacks still in the inventory did not fit, fully or partly: back to their storage slot
+		For $i = 0 To $iCount - 1
+			Local $pLeft = Item_GetItemBySlot($aFree[$i][0], $aFree[$i][1])
+			If $pLeft = 0 Then
+				$iDeposited += 1
+				ContinueLoop
+			EndIf
+
+			$sFullModels &= $aStacks[$i][2] & "|"
+			Item_MoveItem($pLeft, $aStacks[$i][0], $aStacks[$i][1])
+			If Not WaitForSlotInfo($aStacks[$i][0], $aStacks[$i][1], "ModelID", $aStacks[$i][2]) Then
+				LogWarning("Material deposit stopped, move back to storage not confirmed (ModelID: " & $aStacks[$i][2] & ")")
+				Return False
+			EndIf
+			$iReturned += 1
+			Sleep($ITEM_MOVE_DELAY_MS)
+		Next
+	WEnd
+
+	LogInfo("Storage: " & $iDeposited & " material stack(s) deposited")
+	If $iReturned > 0 Then LogWarning("Storage: " & $iReturned & " material stack(s) kept, material storage full")
+	Return True
+EndFunc
+
+; ===============================================================================
+; Lists the common and rare material stacks of the given bags: [Bag, Slot, ModelID]
+; $sExcludedModels: "|"-separated ModelIDs to skip, e.g. "|929|948|"
+; ===============================================================================
+Func FindMaterialStacks($aBags, $sExcludedModels)
+	Local $aStacks[0][3]
+	For $b = 0 To UBound($aBags) - 1
+		If Item_GetBagPtr($aBags[$b]) = 0 Then ContinueLoop
+		For $slot = 1 To Item_GetBagInfo($aBags[$b], "Slots")
+			Local $itemPtr = Item_GetItemBySlot($aBags[$b], $slot)
+			If $itemPtr = 0 Then ContinueLoop
+			Local $iModelID = Item_GetItemInfoByPtr($itemPtr, "ModelID")
+			If Not IsMaterial($iModelID) Then ContinueLoop
+			If StringInStr($sExcludedModels, "|" & $iModelID & "|") Then ContinueLoop
+
+			Local $iIndex = UBound($aStacks)
+			ReDim $aStacks[$iIndex + 1][3]
+			$aStacks[$iIndex][0] = $aBags[$b]
+			$aStacks[$iIndex][1] = $slot
+			$aStacks[$iIndex][2] = $iModelID
+		Next
+	Next
+	Return $aStacks
+EndFunc
+
+; ===============================================================================
+; Lists the empty slots of the given bags: [Bag, Slot]
+; ===============================================================================
+Func FindFreeSlots($aBags)
+	Local $aFree[0][2]
+	For $b = 0 To UBound($aBags) - 1
+		If Item_GetBagPtr($aBags[$b]) = 0 Then ContinueLoop
+		For $slot = 1 To Item_GetBagInfo($aBags[$b], "Slots")
+			If Item_GetItemBySlot($aBags[$b], $slot) <> 0 Then ContinueLoop
+			Local $iIndex = UBound($aFree)
+			ReDim $aFree[$iIndex + 1][2]
+			$aFree[$iIndex][0] = $aBags[$b]
+			$aFree[$iIndex][1] = $slot
+		Next
+	Next
+	Return $aFree
+EndFunc
+
+; ===============================================================================
+; Deposits are asynchronous: polls the first $iCount slots of $aSlots ([Bag, Slot, ...]) until they are empty
+; Returns the number of slots still holding an item after $MATERIAL_DEPOSIT_TIMEOUT_MS
+; ===============================================================================
+Func WaitForSlotsEmpty($aSlots, $iCount = -1)
+	If $iCount < 0 Then $iCount = UBound($aSlots)
+	Local $hTimer = TimerInit()
+	Local $iLeft
+	Do
+		Sleep(50)
+		$iLeft = 0
+		For $i = 0 To $iCount - 1
+			If Item_GetItemBySlot($aSlots[$i][0], $aSlots[$i][1]) <> 0 Then $iLeft += 1
+		Next
+	Until $iLeft = 0 Or TimerDiff($hTimer) > $MATERIAL_DEPOSIT_TIMEOUT_MS
+	Return $iLeft
 EndFunc
 
 ; ===============================================================================
