@@ -19,6 +19,7 @@
 #Region Includes
 ; #INCLUDES# ====================================================================================================================
 #include "..\..\API\_GwAu3.au3"
+#include "Files\AccountReader.au3"
 #include "Files\GUI.au3"
 #include "Files\SortEngine.au3"
 #include "Files\ItemClassifier.au3"
