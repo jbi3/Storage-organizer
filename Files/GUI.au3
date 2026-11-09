@@ -22,6 +22,7 @@ Global $g_lblStatus = 0
 Global $g_prgProgress = 0
 Global $g_lblProgress = 0
 Global $g_btnStart = 0
+Global $g_btnRead = 0
 Global $g_edtLog = 0
 
 Global $g_bSortRunning = False
@@ -45,8 +46,9 @@ Func CreateGUI()
 	
 	; Character section
 	GUICtrlCreateGroup("Character", 20, 10, 445, 50)
-	$g_cmbCharacter = GUICtrlCreateCombo("", 30, 28, 360, 25, $CBS_DROPDOWNLIST)
+	$g_cmbCharacter = GUICtrlCreateCombo("", 30, 28, 295, 25, $CBS_DROPDOWNLIST)
 	GUICtrlSetData($g_cmbCharacter, Scanner_GetLoggedCharNames())
+	$g_btnRead = GUICtrlCreateButton("Read", 335, 26, 55, 28)
 	$g_btnStart = GUICtrlCreateButton("Start", 400, 26, 55, 28)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
@@ -74,6 +76,7 @@ Func CreateGUI()
 	; Log section
 	GUICtrlCreateGroup("Log", 20, 260, 445, 215)
 	$g_edtLog = GUICtrlCreateEdit("", 30, 280, 425, 185, BitOR($ES_MULTILINE, $ES_READONLY, $ES_AUTOVSCROLL, $WS_VSCROLL))
+	GUICtrlSetLimit($g_edtLog, 2000000) ; A full account dump exceeds the default edit limit
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
 	; Show GUI
@@ -104,6 +107,9 @@ Func RunGUI()
 				
 			Case $g_btnStart
 				OnStartClick()
+
+			Case $g_btnRead
+				OnReadClick()
 		EndSwitch
 		
 		Sleep(10)
@@ -116,32 +122,13 @@ EndFunc
 ; Event: Start button clicked
 ; ===============================================================================
 Func OnStartClick()
-	Local $sSelectedChar = GUICtrlRead($g_cmbCharacter)
-	
-	If $sSelectedChar = "" Then
-		MsgBox(16, "Error", "Please select a character first!")
-		Return
-	EndIf
-	
 	If GUICtrlRead($g_chkStorage) <> $GUI_CHECKED And GUICtrlRead($g_chkInventory) <> $GUI_CHECKED Then
 		MsgBox(16, "Error", "Please check at least one zone to sort!")
 		Return
 	EndIf
-	
-	LogInfo("Connecting to: " & $sSelectedChar)
-	UpdateStatus("Connecting to " & $sSelectedChar & "...")
-	
-	; Initialize GwAu3 for selected character
-	Local $hWnd = Core_Initialize($sSelectedChar)
-	
-	If $hWnd = 0 Then
-		LogError("Failed to connect to " & $sSelectedChar)
-		UpdateStatus("Connection failed")
-		MsgBox(16, "Error", "Failed to connect to Guild Wars client for " & $sSelectedChar)
-		Return
-	EndIf
-	
-	LogInfo("Connected successfully!")
+
+	If Not ConnectToSelectedChar() Then Return
+
 	UpdateStatus("Starting sort...")
 	
 	; Disable controls
@@ -156,6 +143,57 @@ Func OnStartClick()
 	
 	; Start sort in background using AdlibRegister
 	AdlibRegister("DoSortStep", 100)
+EndFunc
+
+; ===============================================================================
+; Connect GwAu3 to the selected character; shared by Start and Read
+; ===============================================================================
+Func ConnectToSelectedChar()
+	Local $sSelectedChar = GUICtrlRead($g_cmbCharacter)
+
+	If $sSelectedChar = "" Then
+		MsgBox(16, "Error", "Please select a character first!")
+		Return False
+	EndIf
+
+	LogInfo("Connecting to: " & $sSelectedChar)
+	UpdateStatus("Connecting to " & $sSelectedChar & "...")
+
+	; Initialize GwAu3 for selected character
+	Local $hWnd = Core_Initialize($sSelectedChar)
+
+	If $hWnd = 0 Then
+		LogError("Failed to connect to " & $sSelectedChar)
+		UpdateStatus("Connection failed")
+		MsgBox(16, "Error", "Failed to connect to Guild Wars client for " & $sSelectedChar)
+		Return False
+	EndIf
+
+	LogInfo("Connected successfully!")
+	Return True
+EndFunc
+
+; ===============================================================================
+; Event: Read button clicked - read-only dump of storage, materials and bags
+; ===============================================================================
+Func OnReadClick()
+	If Not ConnectToSelectedChar() Then Return
+
+	GUICtrlSetState($g_btnRead, $GUI_DISABLE)
+	GUICtrlSetState($g_btnStart, $GUI_DISABLE)
+	UpdateStatus("Reading account content...")
+
+	Local $aContent = ReadAccountContent()
+	If @error Then
+		LogWarning("No bag readable: " & UBound($aContent) & " items read in " & $g_iReadDurationMs & " ms")
+		UpdateStatus("Nothing readable - see log")
+	Else
+		DumpAccountContent($aContent)
+		UpdateStatus("Read complete")
+	EndIf
+
+	GUICtrlSetState($g_btnRead, $GUI_ENABLE)
+	GUICtrlSetState($g_btnStart, $GUI_ENABLE)
 EndFunc
 
 ; ===============================================================================
