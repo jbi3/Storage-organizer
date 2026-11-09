@@ -3,7 +3,7 @@
 
 ; ===============================================================================
 ; Sort Engine Module
-; Core sorting algorithm for Xunlai storage
+; Core sorting algorithm for Xunlai storage and character inventory
 ; ===============================================================================
 
 ; Configuration
@@ -23,39 +23,53 @@ Global Enum $COL_POINTER = 0, $COL_CATEGORY, $COL_CURRENT_BAG, $COL_CURRENT_SLOT
 
 ; ===============================================================================
 ; Main sorting function
+; Sorts the checked zones; each zone is restacked and sorted on its own (items never cross between them)
 ; ===============================================================================
-Func SortXunlaiStorage($bFreeSlotsAtStart = False)
+Func SortZones($bStorage, $bInventory, $bFreeSlotsAtStart = False)
 	LogInfo("=== Storage Organizer ===")
 	
-	; Reset state
-	$g_iProcessedItems = 0
-	
 	; Pre-sort validation
-	If Not ValidateSortingConditions() Then
+	If Not ValidateSortingConditions($bStorage) Then
 		LogError("Pre-sort validation failed")
 		Return False
 	EndIf
 	
-	; Pre-pass: merge incomplete stacks, inventory and storage separately (items never cross between them)
-	LogInfo("Restacking inventory and storage...")
 	Local $aInventoryBags[4] = [$GC_I_INVENTORY_BACKPACK, $GC_I_INVENTORY_BELT_POUCH, $GC_I_INVENTORY_BAG1, $GC_I_INVENTORY_BAG2]
 	Local $aStorageBags[$STORAGE_BAG_MAX - $STORAGE_BAG_MIN + 1]
 	For $i = 0 To UBound($aStorageBags) - 1
 		$aStorageBags[$i] = $STORAGE_BAG_MIN + $i
 	Next
-	If Not RestackBags($aInventoryBags, "Inventory") Or Not RestackBags($aStorageBags, "Storage") Then
-		LogError("Restack failed")
+	
+	If $bInventory And Not SortBags($aInventoryBags, "Inventory", $bFreeSlotsAtStart) Then Return False
+	If $bStorage And Not SortBags($aStorageBags, "Storage", $bFreeSlotsAtStart) Then Return False
+	
+	Return True
+EndFunc
+
+; ===============================================================================
+; Restack then sort the given bags ($sZone is only used in the log)
+; ===============================================================================
+Func SortBags($aBags, $sZone, $bFreeSlotsAtStart)
+	LogInfo("=== " & $sZone & " ===")
+	
+	; Reset state
+	$g_iProcessedItems = 0
+	
+	; Pre-pass: merge incomplete stacks
+	LogInfo("Restacking " & $sZone & "...")
+	If Not RestackBags($aBags, $sZone) Then
+		LogError($sZone & " restack failed")
 		Return False
 	EndIf
 	
-	; Step 1: Scan all storage items
-	LogInfo("Step 1: Scanning storage items...")
-	If Not ScanStorageItems() Then
-		LogError("Failed to scan storage items")
-		Return False
+	; Step 1: Scan all items of the zone
+	LogInfo("Step 1: Scanning " & $sZone & " items...")
+	If Not ScanBagItems($aBags) Then
+		LogWarning($sZone & " is empty - nothing to sort")
+		Return True
 	EndIf
 	
-	LogInfo("Found " & $g_iTotalItems & " items in storage")
+	LogInfo("Found " & $g_iTotalItems & " items in " & $sZone)
 	
 	; Step 2: Categorize items
 	LogInfo("Step 2: Categorizing items...")
@@ -67,7 +81,7 @@ Func SortXunlaiStorage($bFreeSlotsAtStart = False)
 	
 	; Step 4: Calculate target positions
 	LogInfo("Step 4: Calculating target positions...")
-	CalculateTargetPositions($bFreeSlotsAtStart)
+	CalculateTargetPositions($aBags, $bFreeSlotsAtStart)
 	
 	; Step 5: Move items to target positions
 	LogInfo("Step 5: Moving items to sorted positions...")
@@ -76,19 +90,20 @@ Func SortXunlaiStorage($bFreeSlotsAtStart = False)
 		Return False
 	EndIf
 	
-	LogInfo("=== Sorting Complete ===")
+	LogInfo("=== " & $sZone & " Sorting Complete ===")
 	LogInfo("Total items processed: " & $g_iProcessedItems & "/" & $g_iTotalItems)
 	Return True
 EndFunc
 
 ; ===============================================================================
-; Scan all storage bags and collect item data
+; Scan the given bags and collect item data
 ; ===============================================================================
-Func ScanStorageItems()
+Func ScanBagItems($aBags)
 	ReDim $g_aItemList[0][6]
 	$g_iTotalItems = 0
 	
-	For $iBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
+	For $b = 0 To UBound($aBags) - 1
+		Local $iBag = $aBags[$b]
 		Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 		If $iMaxSlots = 0 Then ContinueLoop
 		
@@ -207,26 +222,28 @@ EndFunc
 ; Calculate target positions for each item (front-to-back packing)
 ; $bFreeSlotsAtStart: skip the free slots first, so the items end at the last slot
 ; ===============================================================================
-Func CalculateTargetPositions($bFreeSlotsAtStart = False)
-	Local $iBag = $STORAGE_BAG_MIN
+Func CalculateTargetPositions($aBags, $bFreeSlotsAtStart = False)
+	Local $iBagIndex = 0
+	Local $iBag = $aBags[$iBagIndex]
 	Local $iSlot = 1
 	Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 	
 	; Number of free slots to leave before the first item
 	Local $iSkip = 0
 	If $bFreeSlotsAtStart Then
-		For $iCountBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
-			$iSkip += Item_GetBagInfo($iCountBag, "Slots")
+		For $b = 0 To UBound($aBags) - 1
+			$iSkip += Item_GetBagInfo($aBags[$b], "Slots")
 		Next
 		$iSkip -= $g_iTotalItems
 	EndIf
 	
 	For $i = 0 To $g_iTotalItems - 1
 		; Find next available slot
-		While $iBag <= $STORAGE_BAG_MAX
+		While $iBagIndex < UBound($aBags)
 			If $iSlot > $iMaxSlots Then
-				$iBag += 1
-				If $iBag > $STORAGE_BAG_MAX Then ExitLoop
+				$iBagIndex += 1
+				If $iBagIndex >= UBound($aBags) Then ExitLoop
+				$iBag = $aBags[$iBagIndex]
 				$iSlot = 1
 				$iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 				If $iMaxSlots = 0 Then ContinueLoop
