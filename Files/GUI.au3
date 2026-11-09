@@ -92,11 +92,14 @@ EndFunc
 ; ===============================================================================
 Func RunGUI()
 	While True
-		Local $iMsg = GUIGetMsg()
-		
-		Switch $iMsg
+		; Advanced mode: the account view is a second window with its own close button
+		Local $aMsg = GUIGetMsg(1)
+
+		Switch $aMsg[0]
 			Case $GUI_EVENT_CLOSE
-				If $g_bSortRunning Then
+				If $aMsg[1] = $g_hViewGUI Then
+					CloseAccountView()
+				ElseIf $g_bSortRunning Then
 					Local $iResponse = MsgBox(4 + 32, "Confirm Exit", "Sorting is in progress. Are you sure you want to exit?")
 					If $iResponse = 6 Then ; Yes
 						ExitLoop
@@ -189,6 +192,7 @@ Func OnReadClick()
 		UpdateStatus("Nothing readable - see log")
 	Else
 		DumpAccountContent($aContent)
+		ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI)
 		UpdateStatus("Read complete")
 	EndIf
 
