@@ -7,9 +7,10 @@
 
 ; ===============================================================================
 ; Validate all sorting conditions before starting
+; $bStorage: the Xunlai storage is sorted, which needs an outpost
 ; Returns: True if safe to proceed, False otherwise
 ; ===============================================================================
-Func ValidateSortingConditions()
+Func ValidateSortingConditions($bStorage)
 	LogInfo("=== Starting Pre-Sort Validation ===")
 	
 	; Check if in game
@@ -18,6 +19,12 @@ Func ValidateSortingConditions()
 		Return False
 	EndIf
 	LogInfo("✓ Character is in game")
+	
+	; The inventory can be sorted anywhere
+	If Not $bStorage Then
+		LogInfo("=== Validation Complete: All checks passed ===")
+		Return True
+	EndIf
 	
 	; Check if in outpost
 	If Not Map_GetInstanceInfo("IsOutpost") Then
@@ -41,22 +48,6 @@ Func ValidateSortingConditions()
 	EndIf
 	LogInfo("✓ Found " & $iStorageBagCount & " accessible storage bags")
 	
-	; Count total items in storage
-	Local $iTotalItems = 0
-	For $iBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
-		Local $iItemCount = Item_GetBagInfo($iBag, "ItemCount")
-		If $iItemCount > 0 Then
-			$iTotalItems += $iItemCount
-		EndIf
-	Next
-	
-	LogInfo("✓ Total items in storage: " & $iTotalItems)
-	
-	If $iTotalItems = 0 Then
-		LogWarning("Storage is empty - nothing to sort")
-		Return False
-	EndIf
-	
 	LogInfo("=== Validation Complete: All checks passed ===")
 	Return True
 EndFunc
@@ -75,9 +66,10 @@ Func ValidateItemPointer($pItem)
 EndFunc
 
 ; ===============================================================================
-; Check if storage bag is valid
+; Check if bag can be sorted: a storage bag or an inventory bag (equipment pack excluded)
 ; ===============================================================================
-Func IsValidStorageBag($iBag)
+Func IsValidSortBag($iBag)
+	If $iBag >= $GC_I_INVENTORY_BACKPACK And $iBag <= $GC_I_INVENTORY_BAG2 Then Return True
 	Return $iBag >= $STORAGE_BAG_MIN And $iBag <= $STORAGE_BAG_MAX
 EndFunc
 
@@ -85,7 +77,7 @@ EndFunc
 ; Check if slot is valid for given bag
 ; ===============================================================================
 Func IsValidSlot($iBag, $iSlot)
-	If Not IsValidStorageBag($iBag) Then Return False
+	If Not IsValidSortBag($iBag) Then Return False
 	
 	Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 	Return $iSlot >= 1 And $iSlot <= $iMaxSlots
@@ -102,7 +94,7 @@ Func ValidateMoveOperation($pItem, $iTargetBag, $iTargetSlot)
 	EndIf
 	
 	; Validate target bag
-	If Not IsValidStorageBag($iTargetBag) Then
+	If Not IsValidSortBag($iTargetBag) Then
 		LogError("Invalid target bag: " & $iTargetBag)
 		Return False
 	EndIf
