@@ -14,6 +14,7 @@
 ; GUI Controls
 Global $g_hGUI = 0
 Global $g_cmbCharacter = 0
+Global $g_cmbPlacement = 0
 Global $g_lblStatus = 0
 Global $g_prgProgress = 0
 Global $g_lblProgress = 0
@@ -28,12 +29,16 @@ Global Const $SCRIPT_VERSION = "1.0.0"
 Global Const $SCRIPT_AUTHOR = "GwAu3 Community"
 Global Const $SCRIPT_YEAR = "2026"
 
+; Placement of the sorted items in the Xunlai storage
+Global Const $PLACEMENT_FREE_AT_END = "Free slots at the end (items from the first slot)"
+Global Const $PLACEMENT_FREE_AT_START = "Free slots at the start (items up to the last slot)"
+
 ; ===============================================================================
 ; Create and display the main GUI
 ; ===============================================================================
 Func CreateGUI()
 	; Main window
-	$g_hGUI = GUICreate($SCRIPT_NAME, 480, 360, -1, -1, BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_MINIMIZEBOX))
+	$g_hGUI = GUICreate($SCRIPT_NAME, 480, 415, -1, -1, BitOR($WS_OVERLAPPED, $WS_CAPTION, $WS_SYSMENU, $WS_MINIMIZEBOX))
 	
 	; Character section
 	GUICtrlCreateGroup("Character", 20, 10, 445, 50)
@@ -42,16 +47,22 @@ Func CreateGUI()
 	$g_btnStart = GUICtrlCreateButton("Start", 400, 26, 55, 28)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
+	; Placement section - where the free slots go after sorting
+	GUICtrlCreateGroup("Placement", 20, 70, 445, 50)
+	$g_cmbPlacement = GUICtrlCreateCombo("", 30, 88, 425, 25, $CBS_DROPDOWNLIST)
+	GUICtrlSetData($g_cmbPlacement, $PLACEMENT_FREE_AT_END & "|" & $PLACEMENT_FREE_AT_START, $PLACEMENT_FREE_AT_END)
+	GUICtrlCreateGroup("", -99, -99, 1, 1)
+	
 	; Status section - status text, progress bar, and percentage
-	GUICtrlCreateGroup("Status", 20, 70, 445, 45)
-	$g_lblStatus = GUICtrlCreateLabel("Ready to sort", 30, 90, 165, 20)
-	$g_prgProgress = GUICtrlCreateProgress(205, 91, 150, 16)
-	$g_lblProgress = GUICtrlCreateLabel("0% (0/0)", 358, 90, 97, 20, $SS_RIGHT)
+	GUICtrlCreateGroup("Status", 20, 125, 445, 45)
+	$g_lblStatus = GUICtrlCreateLabel("Ready to sort", 30, 145, 165, 20)
+	$g_prgProgress = GUICtrlCreateProgress(205, 146, 150, 16)
+	$g_lblProgress = GUICtrlCreateLabel("0% (0/0)", 358, 145, 97, 20, $SS_RIGHT)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
 	; Log section
-	GUICtrlCreateGroup("Log", 20, 125, 445, 215)
-	$g_edtLog = GUICtrlCreateEdit("", 30, 145, 425, 185, BitOR($ES_MULTILINE, $ES_READONLY, $ES_AUTOVSCROLL, $WS_VSCROLL))
+	GUICtrlCreateGroup("Log", 20, 180, 445, 215)
+	$g_edtLog = GUICtrlCreateEdit("", 30, 200, 425, 185, BitOR($ES_MULTILINE, $ES_READONLY, $ES_AUTOVSCROLL, $WS_VSCROLL))
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 	
 	; Show GUI
@@ -120,6 +131,7 @@ Func OnStartClick()
 	; Disable controls
 	GUICtrlSetState($g_btnStart, $GUI_DISABLE)
 	GUICtrlSetState($g_cmbCharacter, $GUI_DISABLE)
+	GUICtrlSetState($g_cmbPlacement, $GUI_DISABLE)
 	
 	$g_bSortRunning = True
 	
@@ -134,7 +146,7 @@ Func DoSortStep()
 	AdlibUnRegister("DoSortStep")
 	
 	; Execute the sort
-	Local $bSuccess = SortXunlaiStorage()
+	Local $bSuccess = SortXunlaiStorage(GUICtrlRead($g_cmbPlacement) = $PLACEMENT_FREE_AT_START)
 	
 	If $bSuccess Then
 		UpdateStatus("Sorting complete!")
@@ -156,6 +168,7 @@ Func FinishSort()
 	; Re-enable controls
 	GUICtrlSetState($g_btnStart, $GUI_ENABLE)
 	GUICtrlSetState($g_cmbCharacter, $GUI_ENABLE)
+	GUICtrlSetState($g_cmbPlacement, $GUI_ENABLE)
 EndFunc
 
 ; ===============================================================================

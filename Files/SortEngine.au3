@@ -10,6 +10,8 @@
 Global Const $ITEM_MOVE_DELAY_MS = 150  ; Delay between item moves (100-300ms recommended)
 Global Const $STORAGE_BAG_MIN = 8        ; First storage bag
 Global Const $STORAGE_BAG_MAX = 21       ; Last storage bag
+Global Const $MAX_STACK_SIZE = 250       ; Game rule: identical stackable items stack up to 250
+Global Const $ITEM_MOVE_TIMEOUT_MS = 1500 ; Max wait for the game to confirm a restack move
 
 ; State variables
 Global $g_aItemList[0][6]         ; 2D Array: [pItem, category, currentBag, currentSlot, targetBag, targetSlot]
@@ -22,7 +24,7 @@ Global Enum $COL_POINTER = 0, $COL_CATEGORY, $COL_CURRENT_BAG, $COL_CURRENT_SLOT
 ; ===============================================================================
 ; Main sorting function
 ; ===============================================================================
-Func SortXunlaiStorage()
+Func SortXunlaiStorage($bFreeSlotsAtStart = False)
 	LogInfo("=== Storage Organizer ===")
 	
 	; Reset state
@@ -31,6 +33,18 @@ Func SortXunlaiStorage()
 	; Pre-sort validation
 	If Not ValidateSortingConditions() Then
 		LogError("Pre-sort validation failed")
+		Return False
+	EndIf
+	
+	; Pre-pass: merge incomplete stacks, inventory and storage separately (items never cross between them)
+	LogInfo("Restacking inventory and storage...")
+	Local $aInventoryBags[4] = [$GC_I_INVENTORY_BACKPACK, $GC_I_INVENTORY_BELT_POUCH, $GC_I_INVENTORY_BAG1, $GC_I_INVENTORY_BAG2]
+	Local $aStorageBags[$STORAGE_BAG_MAX - $STORAGE_BAG_MIN + 1]
+	For $i = 0 To UBound($aStorageBags) - 1
+		$aStorageBags[$i] = $STORAGE_BAG_MIN + $i
+	Next
+	If Not RestackBags($aInventoryBags, "Inventory") Or Not RestackBags($aStorageBags, "Storage") Then
+		LogError("Restack failed")
 		Return False
 	EndIf
 	
@@ -53,7 +67,7 @@ Func SortXunlaiStorage()
 	
 	; Step 4: Calculate target positions
 	LogInfo("Step 4: Calculating target positions...")
-	CalculateTargetPositions()
+	CalculateTargetPositions($bFreeSlotsAtStart)
 	
 	; Step 5: Move items to target positions
 	LogInfo("Step 5: Moving items to sorted positions...")
@@ -191,11 +205,21 @@ EndFunc
 
 ; ===============================================================================
 ; Calculate target positions for each item (front-to-back packing)
+; $bFreeSlotsAtStart: skip the free slots first, so the items end at the last slot
 ; ===============================================================================
-Func CalculateTargetPositions()
+Func CalculateTargetPositions($bFreeSlotsAtStart = False)
 	Local $iBag = $STORAGE_BAG_MIN
 	Local $iSlot = 1
 	Local $iMaxSlots = Item_GetBagInfo($iBag, "Slots")
+	
+	; Number of free slots to leave before the first item
+	Local $iSkip = 0
+	If $bFreeSlotsAtStart Then
+		For $iCountBag = $STORAGE_BAG_MIN To $STORAGE_BAG_MAX
+			$iSkip += Item_GetBagInfo($iCountBag, "Slots")
+		Next
+		$iSkip -= $g_iTotalItems
+	EndIf
 	
 	For $i = 0 To $g_iTotalItems - 1
 		; Find next available slot
@@ -206,6 +230,12 @@ Func CalculateTargetPositions()
 				$iSlot = 1
 				$iMaxSlots = Item_GetBagInfo($iBag, "Slots")
 				If $iMaxSlots = 0 Then ContinueLoop
+			EndIf
+			
+			If $iSkip > 0 Then
+				$iSkip -= 1
+				$iSlot += 1
+				ContinueLoop
 			EndIf
 			
 			; Assign target position
@@ -285,3 +315,81 @@ Func SafeMoveItem($pItem, $iTargetBag, $iTargetSlot)
 	Return True
 EndFunc
 
+; ===============================================================================
+; Restacking
+; Merges incomplete stacks of identical items within the given bags, filling the first stack found first
+; Identical means same ModelID and ExtraID: dyes share a ModelID and only differ by ExtraID
+; Returns True on success, False if the game did not confirm a move
+; ===============================================================================
+Func RestackBags($aBags, $sZone)
+	Local $aStacks[0][4] ; [Bag, Slot, ModelID, ExtraID]
+
+	For $b = 0 To UBound($aBags) - 1
+		Local $bag = $aBags[$b]
+		If Item_GetBagPtr($bag) = 0 Then ContinueLoop
+
+		Local $maxSlots = Item_GetBagInfo($bag, "Slots")
+		For $slot = 1 To $maxSlots
+			Local $itemPtr = Item_GetItemBySlot($bag, $slot)
+			If $itemPtr = 0 Then ContinueLoop
+			If Not Item_GetItemInfoByPtr($itemPtr, "IsStackable") Then ContinueLoop
+			If Item_GetItemInfoByPtr($itemPtr, "Quantity") >= $MAX_STACK_SIZE Then ContinueLoop
+
+			Local $iIndex = UBound($aStacks)
+			ReDim $aStacks[$iIndex + 1][4]
+			$aStacks[$iIndex][0] = $bag
+			$aStacks[$iIndex][1] = $slot
+			$aStacks[$iIndex][2] = Item_GetItemInfoByPtr($itemPtr, "ModelID")
+			$aStacks[$iIndex][3] = Item_GetItemInfoByPtr($itemPtr, "ExtraID")
+		Next
+	Next
+
+	Local $iMoves = 0
+	Local $iSlotsFreed = 0
+	For $t = 0 To UBound($aStacks) - 2
+		For $s = $t + 1 To UBound($aStacks) - 1
+			If $aStacks[$s][2] <> $aStacks[$t][2] Or $aStacks[$s][3] <> $aStacks[$t][3] Then ContinueLoop
+
+			; A slot is empty once its whole stack has been merged into another one
+			Local $targetPtr = Item_GetItemBySlot($aStacks[$t][0], $aStacks[$t][1])
+			If $targetPtr = 0 Then ExitLoop
+			Local $sourcePtr = Item_GetItemBySlot($aStacks[$s][0], $aStacks[$s][1])
+			If $sourcePtr = 0 Then ContinueLoop
+
+			Local $iTargetQty = Item_GetItemInfoByPtr($targetPtr, "Quantity")
+			Local $iSourceQty = Item_GetItemInfoByPtr($sourcePtr, "Quantity")
+			If $iTargetQty >= $MAX_STACK_SIZE Then ExitLoop
+
+			Local $iAmount = $MAX_STACK_SIZE - $iTargetQty
+			If $iSourceQty < $iAmount Then $iAmount = $iSourceQty
+
+			Item_MoveItem_($sourcePtr, $aStacks[$t][0], $aStacks[$t][1], $iAmount)
+			If Not WaitForSlotInfo($aStacks[$t][0], $aStacks[$t][1], "Quantity", $iTargetQty + $iAmount) Then
+				LogWarning($sZone & " restack stopped, move not confirmed (ModelID: " & $aStacks[$t][2] & ")")
+				Return False
+			EndIf
+
+			$iMoves += 1
+			If $iAmount = $iSourceQty Then $iSlotsFreed += 1
+			Sleep($ITEM_MOVE_DELAY_MS)
+		Next
+	Next
+
+	LogInfo($sZone & " restack done: " & $iMoves & " move(s), " & $iSlotsFreed & " slot(s) freed")
+	Return True
+EndFunc
+
+; ===============================================================================
+; Moves are asynchronous: polls the slot until its item info ($sInfo) holds the expected value
+; Returns True once reached, False after $ITEM_MOVE_TIMEOUT_MS
+; ===============================================================================
+Func WaitForSlotInfo($iBag, $iSlot, $sInfo, $vExpected)
+	Local $hTimer = TimerInit()
+	Do
+		Sleep(20)
+		Local $itemPtr = Item_GetItemBySlot($iBag, $iSlot)
+		If $itemPtr <> 0 And Item_GetItemInfoByPtr($itemPtr, $sInfo) = $vExpected Then Return True
+	Until TimerDiff($hTimer) > $ITEM_MOVE_TIMEOUT_MS
+
+	Return False
+EndFunc

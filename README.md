@@ -15,6 +15,8 @@ A Guild Wars storage organizer that automatically sorts your Xunlai storage.
 - **Safety Features**: Pre-sort validation, safe item movement with retries
 - **Progress Tracking**: Visual progress bar during sorting
 - **Error Handling**: Graceful error recovery
+- **Auto-Restack**: Before sorting, merges incomplete stacks of identical items (250 items max per stack), in the 4 inventory bags and in the Xunlai storage separately
+- **Free Slots Placement**: Choose whether the free storage slots end up at the end (items from the first slot) or at the start (items up to the last slot)
 
 ## 🪄 Sorting Order
 
@@ -30,6 +32,15 @@ Items are sorted into the following categories (in order):
 5. **Weapons** - Sorted by rarity, then type
 6. **Armor** - Sorted by rarity, then type
 7. **Other** - Everything else
+
+### 🧱 Restack
+
+Runs on every Start, before the sort:
+- Identical means same ModelID and ExtraID: dyes of different colours are never merged
+- The first incomplete stack found is filled first, possibly with a part of another stack
+- Inventory and storage are restacked separately: no item moves between them
+- Material storage is excluded, as for the sort
+- Each move is confirmed by the game; an unconfirmed move stops the run with a warning in the log
 
 ## ⚙️ Requirements
 
@@ -50,8 +61,9 @@ Items are sorted into the following categories (in order):
 
 1. **Launch the script**: Run `Storage-Organizer.au3`
 2. **Select character**: Choose your character from the dropdown
-3. **Click "Start Sort"**: Begin the sorting process
-4. **Wait for completion**: Monitor progress in the log window
+3. **Choose the placement**: Free slots at the end (default) or at the start of the storage
+4. **Click "Start"**: Restack, then sort
+5. **Wait for completion**: Monitor progress in the log window
 
 ### ⚠️ Important Notes
 
@@ -84,7 +96,7 @@ Items are sorted into the following categories (in order):
 
 - Does not sort inventory bags (future feature)
 - Does not sell or destroy items
-- Does not stack items (future feature)
+- Does not merge stacks between inventory and storage
 - Requires manual placement in outpost - no automatic travel
 
 ## 💡 Future Features
@@ -93,7 +105,6 @@ Planned enhancements for future versions:
 
 - Customizable category order (Configuration GUI)
 - Custom item priority rules
-- Item restacking (consolidate stacks)
 - Sort profiles (save/load configurations)
 - Inventory sorting support
 
