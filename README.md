@@ -18,6 +18,7 @@ A Guild Wars storage organizer that automatically sorts your Xunlai storage and 
 - **Error Handling**: Graceful error recovery
 - **Auto-Restack**: Before sorting, merges incomplete stacks of identical items (250 items max per stack), in each checked zone separately
 - **Free Slots Placement**: Choose whether the free slots end up at the end (items from the first slot) or at the start (items up to the last slot); applies to every checked zone
+- **Material Deposit** (optional): Before restacking, sends the common and rare materials of the inventory and of the Xunlai storage to the material storage, to free slots
 
 ## 🪄 Sorting Order
 
@@ -43,6 +44,15 @@ Runs on every Start, before the sort, in each checked zone:
 - Material storage and equipment pack are excluded, as for the sort
 - Each move is confirmed by the game; an unconfirmed move stops the run with a warning in the log
 
+### 🧪 Material Deposit
+
+Runs on Start when the "Deposit common and rare materials to the material storage" box is ticked, before the zones, whatever zones are checked:
+- Needs an outpost, as it uses the Xunlai storage
+- Inventory materials are deposited with the game's own "deposit all materials"
+- Storage materials transit through the free inventory slots, then are deposited the same way: at least one free inventory slot is needed
+- The game picks the material slot and applies its capacity; a stack that does not fit goes back to its storage slot and is reported in the log
+- Each move to and from the inventory is confirmed by the game; an unconfirmed move stops the run with a warning in the log
+
 ## ⚙️ Requirements
 
 - **Guild Wars** (Game must be running)
@@ -64,12 +74,13 @@ Runs on every Start, before the sort, in each checked zone:
 2. **Select character**: Choose your character from the dropdown
 3. **Check the zones**: Xunlai storage (default), Inventory, or both
 4. **Choose the placement**: Free slots at the end (default) or at the start
-5. **Click "Start"**: Restack, then sort
-6. **Wait for completion**: Monitor progress in the log window
+5. **Tick the material deposit** (optional): Send the materials to the material storage first
+6. **Click "Start"**: Deposit materials if ticked, restack, then sort
+7. **Wait for completion**: Monitor progress in the log window
 
 ### ⚠️ Important Notes
 
-- **Must be in an outpost** to sort storage (the inventory alone can be sorted anywhere)
+- **Must be in an outpost** to sort storage or deposit materials (the inventory alone can be sorted anywhere)
 - **Character must be logged in** and in-game
 - **Do not interfere** with the game while sorting is in progress
 
