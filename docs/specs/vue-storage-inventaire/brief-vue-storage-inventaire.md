@@ -3,7 +3,7 @@ sujet: vue-storage-inventaire
 projet: Storage-Organizer
 statut: en-cours
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 
 # Vue du coffre et de l'inventaire
@@ -122,7 +122,7 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la réponse sur la source des icônes.
 
 - [x] T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief · ✅ 2026-11-09 : dump conforme au jeu, 332 items en 9,8 s (voir « Mesures T1 »)
-- [ ] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions
+- [x] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions · ✅ 2026-11-10 : validée en jeu par JB (onglet I, Materials, Inventory), voir « Mesures T2 »
 - [ ] T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu
 - [ ] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que `ValidateSortingConditions` ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle
 - [ ] T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus)
@@ -147,7 +147,7 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - ❓ Fréquence de consultation attendue (CU1, CU2, CU4) ? (JB)
 - ❓ « Quelques secondes » : quel seuil chiffré pour l'affichage complet ? (JB)
 - ❓ Source des icônes d'items et droits de les embarquer dans le dépôt (bloque T7) ? (JB, recherche)
-- ❓ Mise en page : agrandir la fenêtre actuelle (480 × 415) ou ouvrir une seconde fenêtre pour la vue ? (JB)
+- ✅ Mise en page : seconde fenêtre « Account view », ouverte par Read (JB, 2026-11-10).
 - ✅ Conditions de lecture : le coffre se lit en zone explorable et sans avoir ouvert le coffre Xunlai depuis la connexion (T1, 2026-11-09).
 - ❓ Fichier de lecture : un fichier par perso qui garde aussi le coffre lu ce jour-là (proposé), ou un fichier coffre par compte plus un fichier sacs par perso ? Le coffre Xunlai est partagé par le compte, les sacs sont propres à chaque perso. (JB)
 - ❓ Sac d'équipement et objets non réclamés : inclus dans la vue ? (JB)
@@ -183,5 +183,12 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - Cases : 25 par onglet, 42 pour le coffre de matériaux (positions fixes, avec des trous : cases 8, 19, 29, 32…), 20 pour le sac à dos, 10 pour la bourse de ceinture, 15 pour les sacs 1 et 2.
 - `Name` donne le nom sans la quantité. Certains noms portent des balises de couleur du jeu (`<c=#00FF00>Green Rock Candy</c>`, `<c=@ItemRare>Gold Zaishen Coin</c>`) à retirer à l'affichage (T2). Les inscriptions model 19123 sortent « Unknown ».
 - Rareté : 2621 blanc, 2623 bleu, 2624 or, 2627 vert (constantes `$GC_I_RARITY_*`) ; les inscriptions renvoient 33025, valeur hors constantes : couleur par défaut à prévoir (T2).
+
+**2026-11-10, disposition en jeu et mesures T2** (captures de JB, en jeu puis de la vue) :
+- Onglets du coffre : 5 colonnes × 5 lignes, remplies ligne par ligne ; libellés I à XIII, puis une icône de coffre pour le 14e et un marteau pour les matériaux.
+- Coffre de matériaux : 3 colonnes × 12 lignes, 36 matériaux « quantité + icône », les absents affichés à 0 ; les cases internes 8, 29 et 39 à 42 ne sont pas affichées (déduit de l'alignement capture / dump, confirmé par la vue : les deux 0 tombent aux mêmes places qu'en jeu).
+- Sacs (fenêtre F9) : une grille de 5 colonnes, chaque sac commence une nouvelle ligne (sac à dos lignes 1-4, bourse 5-6, sac 1 7-9, sac 2 10-12).
+- Vue validée : mêmes items aux mêmes positions sur l'onglet I, Materials et Inventory. Premier rendu peu lisible (items blancs fondus dans le fond clair, 16 onglets tronqués) : corrigé par un fond sombre et des onglets sur deux lignes.
+- Limite connue jusqu'à T7 : sans icônes, deux piles blanches de même quantité ne se distinguent qu'au survol.
 
 **2026-11-08** (note d'origine, session Item-spammer) : vue du storage et de l'inventaire identique à la vue en jeu, pour mieux voir le tri ; choix de l'ordre du tri et du placement final dans les stockages.
