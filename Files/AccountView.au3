@@ -1,6 +1,7 @@
 #include-once
 #include <GUIConstantsEx.au3>
 #include <StaticConstants.au3>
+#include <TabConstants.au3>
 
 ; ===============================================================================
 ; Account View Module
@@ -14,7 +15,8 @@ Global $g_aViewTabs[16] ; Tab item IDs: panes I-XIV, Materials, Inventory
 
 Global Const $VIEW_WIDTH = 620
 Global Const $VIEW_MARGIN = 15
-Global Const $VIEW_TAB_TOP = 35   ; Room for the tab headers
+Global Const $VIEW_TAB_HEIGHT = 50 ; Tab control holds only the headers, on 2 lines
+Global Const $VIEW_TAB_TOP = 55    ; Cells sit below the headers, on the dark window background
 Global Const $VIEW_COLS = 5
 Global Const $VIEW_CELL = 44
 Global Const $VIEW_GAP = 4
@@ -22,7 +24,8 @@ Global Const $VIEW_MAT_COLS = 3
 Global Const $VIEW_MAT_CELL_W = 180
 Global Const $VIEW_MAT_CELL_H = 32
 
-Global Const $VIEW_COLOR_EMPTY = 0x3A3A3A
+Global Const $VIEW_COLOR_BACKGROUND = 0x1A1A1A
+Global Const $VIEW_COLOR_EMPTY = 0x454545
 Global Const $VIEW_COLOR_UNREADABLE = 0x9A9A9A
 Global Const $VIEW_COLOR_UNKNOWN_RARITY = 0xC8C8C8
 
@@ -54,13 +57,15 @@ Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent)
 	Local $iHeight = $VIEW_TAB_TOP + $iGridHeight + 2 * $VIEW_MARGIN
 
 	$g_hViewGUI = GUICreate("Account view", $VIEW_WIDTH, $iHeight, -1, -1, -1, -1, $hParent)
-	GUICtrlCreateTab(5, 5, $VIEW_WIDTH - 10, $iHeight - 10)
+	GUISetBkColor($VIEW_COLOR_BACKGROUND, $g_hViewGUI)
+	GUICtrlCreateTab(5, 5, $VIEW_WIDTH - 10, $VIEW_TAB_HEIGHT, $TCS_MULTILINE)
 
 	; Storage panes I-XIV (bags 8-21)
 	For $p = 0 To 13
 		$g_aViewTabs[$p] = GUICtrlCreateTabItem($VIEW_PANE_LABELS[$p])
 		If $aBagSlots[$p] = 0 Then
-			GUICtrlCreateLabel("Pane not available", $VIEW_MARGIN, $VIEW_TAB_TOP + $VIEW_MARGIN, 200, 20)
+			Local $idNotAvailable = GUICtrlCreateLabel("Pane not available", $VIEW_MARGIN, $VIEW_TAB_TOP + $VIEW_MARGIN, 200, 20)
+			GUICtrlSetColor($idNotAvailable, 0xFFFFFF)
 		Else
 			_ViewDrawBag($GC_I_INVENTORY_STORAGE1 + $p, $aBagSlots[$p], 0, $aContent, $aIndex)
 		EndIf
