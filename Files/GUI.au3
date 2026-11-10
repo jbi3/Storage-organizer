@@ -26,6 +26,7 @@ Global $g_btnRead = 0
 Global $g_edtLog = 0
 
 Global $g_bSortRunning = False
+Global $g_sLoggedChars = "" ; Characters logged in at startup, "|"-separated
 
 ; Script info
 Global Const $SCRIPT_NAME = "Storage Organizer"
@@ -47,7 +48,8 @@ Func CreateGUI()
 	; Character section
 	GUICtrlCreateGroup("Character", 20, 10, 445, 50)
 	$g_cmbCharacter = GUICtrlCreateCombo("", 30, 28, 295, 25, $CBS_DROPDOWNLIST)
-	GUICtrlSetData($g_cmbCharacter, Scanner_GetLoggedCharNames())
+	$g_sLoggedChars = Scanner_GetLoggedCharNames()
+	GUICtrlSetData($g_cmbCharacter, MergeCharNames($g_sLoggedChars, GetSnapshotCharNames()))
 	$g_btnRead = GUICtrlCreateButton("Read", 335, 26, 55, 28)
 	$g_btnStart = GUICtrlCreateButton("Start", 400, 26, 55, 28)
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
@@ -151,7 +153,7 @@ EndFunc
 ; ===============================================================================
 ; Connect GwAu3 to the selected character; shared by Start and Read
 ; ===============================================================================
-Func ConnectToSelectedChar()
+Func ConnectToSelectedChar($bShowError = True)
 	Local $sSelectedChar = GUICtrlRead($g_cmbCharacter)
 
 	If $sSelectedChar = "" Then
@@ -168,7 +170,7 @@ Func ConnectToSelectedChar()
 	If $hWnd = 0 Then
 		LogError("Failed to connect to " & $sSelectedChar)
 		UpdateStatus("Connection failed")
-		MsgBox(16, "Error", "Failed to connect to Guild Wars client for " & $sSelectedChar)
+		If $bShowError Then MsgBox(16, "Error", "Failed to connect to Guild Wars client for " & $sSelectedChar)
 		Return False
 	EndIf
 
@@ -182,26 +184,81 @@ EndFunc
 Func OnReadClick()
 	; A failed read must not leave the previous view on screen as if it were current
 	CloseAccountView()
-	If Not ConnectToSelectedChar() Then Return
 
-	GUICtrlSetState($g_btnRead, $GUI_DISABLE)
-	GUICtrlSetState($g_btnStart, $GUI_DISABLE)
-	UpdateStatus("Reading account content...")
-
-	Local $aContent = ReadAccountContent()
-	If @error Then
-		LogWarning("No bag readable: " & UBound($aContent) & " items read in " & $g_iReadDurationMs & " ms")
-		UpdateStatus("Nothing readable - see log")
-		MsgBox(48, "Nothing readable", "No bag could be read for this character." & @CRLF & _
-			"Wait until the character is fully loaded in game, then click Read again.")
-	Else
-		DumpAccountContent($aContent)
-		ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI)
-		UpdateStatus("Read complete")
+	Local $sChar = GUICtrlRead($g_cmbCharacter)
+	If $sChar = "" Then
+		MsgBox(16, "Error", "Please select a character first!")
+		Return
 	EndIf
 
-	GUICtrlSetState($g_btnRead, $GUI_ENABLE)
-	GUICtrlSetState($g_btnStart, $GUI_ENABLE)
+	; Live read when the character was logged in at startup, else the saved reading
+	Local $sProblem = ""
+	If Not StringInStr("|" & $g_sLoggedChars & "|", "|" & $sChar & "|") Then
+		$sProblem = $sChar & " is not logged in."
+	ElseIf Not ConnectToSelectedChar(False) Then
+		$sProblem = "Failed to connect to Guild Wars client for " & $sChar & "."
+	Else
+		GUICtrlSetState($g_btnRead, $GUI_DISABLE)
+		GUICtrlSetState($g_btnStart, $GUI_DISABLE)
+		UpdateStatus("Reading account content...")
+
+		Local $aContent = ReadAccountContent()
+		Local $bRead = (@error = 0)
+		If $bRead Then
+			DumpAccountContent($aContent)
+			SaveReading($sChar, $aContent)
+			ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI)
+			UpdateStatus("Read complete")
+		Else
+			LogWarning("No bag readable: " & UBound($aContent) & " items read in " & $g_iReadDurationMs & " ms")
+			$sProblem = "No bag could be read for this character."
+		EndIf
+
+		GUICtrlSetState($g_btnRead, $GUI_ENABLE)
+		GUICtrlSetState($g_btnStart, $GUI_ENABLE)
+		If $bRead Then Return
+	EndIf
+
+	; Live read impossible: show the last saved reading, if any
+	If ShowSavedReading($sChar) Then
+		LogWarning($sProblem & " Showing the reading saved on " & $g_sSnapshotDate)
+		UpdateStatus("Showing saved reading")
+	Else
+		LogWarning($sProblem & " No saved reading")
+		UpdateStatus("Nothing readable - see log")
+		MsgBox(48, "Nothing readable", $sProblem & @CRLF & _
+			"No reading saved yet: launch the game, log in this character and click Read once.")
+	EndIf
+EndFunc
+
+; ===============================================================================
+; Save a successful read so it can be viewed with the game closed
+; ===============================================================================
+Func SaveReading($sChar, ByRef $aContent)
+	If Not SaveSnapshot($sChar, $aContent, $g_aReadBagSlots) Then LogWarning("Reading not saved: cannot write " & $SNAPSHOT_DIR)
+EndFunc
+
+; ===============================================================================
+; Open the view on the last saved reading of $sChar; False if there is none
+; ===============================================================================
+Func ShowSavedReading($sChar)
+	Local $aSlots[19]
+	Local $aContent = LoadSnapshot($sChar, $aSlots)
+	If @error Then Return False
+	ShowAccountView($aContent, $aSlots, $g_hGUI, "Account view - " & $sChar & " - saved reading of " & $g_sSnapshotDate)
+	Return True
+EndFunc
+
+; Logged-in characters first, then those that only have a saved reading
+Func MergeCharNames($sLogged, $sSaved)
+	Local $sNames = $sLogged
+	Local $aSaved = StringSplit($sSaved, "|")
+	For $i = 1 To $aSaved[0]
+		If $aSaved[$i] = "" Or StringInStr("|" & $sNames & "|", "|" & $aSaved[$i] & "|") Then ContinueLoop
+		If $sNames <> "" Then $sNames &= "|"
+		$sNames &= $aSaved[$i]
+	Next
+	Return $sNames
 EndFunc
 
 ; ===============================================================================
@@ -245,6 +302,7 @@ Func RefreshViewAfterSort($bSortSucceeded)
 	EndIf
 
 	LogInfo("View refreshed: " & UBound($aContent) & " items in " & $g_iReadDurationMs & " ms")
+	SaveReading(GUICtrlRead($g_cmbCharacter), $aContent)
 	Local $sTitle = "Account view"
 	If Not $bSortSucceeded Then $sTitle &= " - sort interrupted"
 	ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI, $sTitle)
