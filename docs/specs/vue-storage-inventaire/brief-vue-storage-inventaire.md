@@ -45,11 +45,11 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 - **Fréquence** : à chaque tri.
 
 ### CU4 — Ouvrir la vue quand le contenu est illisible
-- **Déclencheur** : le perso n'est pas connecté, ou il est hors d'un avant-poste, ou le coffre n'est pas encore chargé ⚠️ À confirmer.
+- **Déclencheur** : le perso n'est pas connecté, ou aucun sac n'est lisible (par exemple pendant un chargement de carte). Hors avant-poste et coffre non ouvert ne sont pas des cas : le coffre s'y lit (T1, 2026-11-09).
 - **Parcours** :
   1. JB choisit le perso.
   2. La vue affiche un message clair au lieu d'une grille vide ou fausse ; si une lecture enregistrée existe, elle affiche la dernière lecture datée (CU5).
-- **Résultat** : il sait quoi faire (par exemple aller en avant-poste).
+- **Résultat** : il sait quoi faire (par exemple attendre la fin du chargement et relancer Read).
 - **Fréquence** : ⚠️ À confirmer.
 
 ### CU5 — Consulter hors ligne
@@ -88,7 +88,7 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 - **Then** la vue montre le nouveau rangement, et le tri lui-même n'a pas changé de comportement
 
 ### S4 — Contenu illisible (CU4)
-- **Given** un perso en zone explorable, ou dont le coffre n'est pas chargé
+- **Given** un perso non connecté, ou dont aucun sac n'est lisible
 - **When** JB le choisit
 - **Then** un message dit pourquoi la lecture en direct est impossible et quoi faire, sans grille partielle ; si une lecture enregistrée existe, elle s'affiche avec sa date
 
@@ -124,7 +124,7 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - [x] T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief · ✅ 2026-11-09 : dump conforme au jeu, 332 items en 9,8 s (voir « Mesures T1 »)
 - [x] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions · ✅ 2026-11-10 : validée en jeu par JB (onglet I, Materials, Inventory), voir « Mesures T2 »
 - [x] T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu · ✅ 2026-11-10 : validée en jeu par JB sur 3 items témoins ; liste à droite de la grille, colonnes Item, Total et Slots (nombre de cases occupées, ajoutée pour repérer les doublons)
-- [ ] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que `ValidateSortingConditions` ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle
+- [ ] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté ou qu'aucun sac n'est lisible ; réduite le 2026-11-10 (JB) car hors avant-poste et coffre non ouvert se lisent (T1) · couvre CU4 · fini quand : les 2 cas, provoqués en jeu, affichent leur message sans ouvrir de vue
 - [ ] T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus)
 - [ ] T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier `Snapshots\` à côté du script, ajouté au `.gitignore` ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date
 - [ ] T7 — Icônes comme en jeu : remplacer les cases colorées par les icônes des items, bloquée par la question ouverte sur la source des icônes · couvre CU1 · fini quand : une capture de la vue est visuellement comparable à la capture en jeu sur 1 onglet

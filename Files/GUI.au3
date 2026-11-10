@@ -180,6 +180,8 @@ EndFunc
 ; Event: Read button clicked - read-only dump of storage, materials and bags
 ; ===============================================================================
 Func OnReadClick()
+	; A failed read must not leave the previous view on screen as if it were current
+	CloseAccountView()
 	If Not ConnectToSelectedChar() Then Return
 
 	GUICtrlSetState($g_btnRead, $GUI_DISABLE)
@@ -190,6 +192,8 @@ Func OnReadClick()
 	If @error Then
 		LogWarning("No bag readable: " & UBound($aContent) & " items read in " & $g_iReadDurationMs & " ms")
 		UpdateStatus("Nothing readable - see log")
+		MsgBox(48, "Nothing readable", "No bag could be read for this character." & @CRLF & _
+			"Wait until the character is fully loaded in game, then click Read again.")
 	Else
 		DumpAccountContent($aContent)
 		ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI)
