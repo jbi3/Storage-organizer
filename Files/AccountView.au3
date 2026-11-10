@@ -2,18 +2,22 @@
 #include <GUIConstantsEx.au3>
 #include <StaticConstants.au3>
 #include <TabConstants.au3>
+#include <GuiListView.au3>
+#include <Array.au3>
 
 ; ===============================================================================
 ; Account View Module
 ; Read-only window showing the content read by ReadAccountContent(), laid out
-; like the game: storage panes 5x5, material storage 3 columns, bags 5 columns.
+; like the game: storage panes 5x5, material storage 3 columns, bags 5 columns,
+; with the totals of stackable items on the right.
 ; Cells only show data: clicking them does nothing.
 ; ===============================================================================
 
 Global $g_hViewGUI = 0
 Global $g_aViewTabs[16] ; Tab item IDs: panes I-XIV, Materials, Inventory
 
-Global Const $VIEW_WIDTH = 620
+Global Const $VIEW_WIDTH = 620         ; Grid area (tabs and cells)
+Global Const $VIEW_TOTALS_WIDTH = 320  ; Totals list, right of the grid
 Global Const $VIEW_MARGIN = 15
 Global Const $VIEW_TAB_HEIGHT = 50 ; Tab control holds only the headers, on 2 lines
 Global Const $VIEW_TAB_TOP = 55    ; Cells sit below the headers, on the dark window background
@@ -56,7 +60,7 @@ Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent)
 	If 5 * ($VIEW_CELL + $VIEW_GAP) > $iGridHeight Then $iGridHeight = 5 * ($VIEW_CELL + $VIEW_GAP)
 	Local $iHeight = $VIEW_TAB_TOP + $iGridHeight + 2 * $VIEW_MARGIN
 
-	$g_hViewGUI = GUICreate("Account view", $VIEW_WIDTH, $iHeight, -1, -1, -1, -1, $hParent)
+	$g_hViewGUI = GUICreate("Account view", $VIEW_WIDTH + $VIEW_TOTALS_WIDTH, $iHeight, -1, -1, -1, -1, $hParent)
 	GUISetBkColor($VIEW_COLOR_BACKGROUND, $g_hViewGUI)
 	GUICtrlCreateTab(5, 5, $VIEW_WIDTH - 10, $VIEW_TAB_HEIGHT, $TCS_MULTILINE)
 
@@ -88,6 +92,10 @@ Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent)
 	Next
 
 	GUICtrlCreateTabItem("")
+
+	; Totals stay visible whatever the selected tab
+	_ViewDrawTotals($aContent, $VIEW_WIDTH, $VIEW_MARGIN, $VIEW_TOTALS_WIDTH - $VIEW_MARGIN, $iHeight - 2 * $VIEW_MARGIN)
+
 	GUISetState(@SW_SHOW, $g_hViewGUI)
 	GUISwitch($hParent)
 	Return $g_hViewGUI
@@ -120,8 +128,61 @@ Func GetRarityColor($iRarity)
 EndFunc
 
 ; ===============================================================================
+; Totals of stackable items, by ModelID + ExtraID (dyes stay apart by colour)
+; Returns [n][3]: name, total quantity, number of slots; sorted by name
+; ===============================================================================
+Func BuildItemTotals(ByRef $aContent)
+	Local $aTotals[0][3]
+	Local $aKeys[0]
+	For $i = 0 To UBound($aContent) - 1
+		If Not $aContent[$i][$READ_COL_STACKABLE] Then ContinueLoop
+
+		Local $sKey = $aContent[$i][$READ_COL_MODELID] & "|" & $aContent[$i][$READ_COL_EXTRAID]
+		Local $iRow = -1
+		For $k = 0 To UBound($aKeys) - 1
+			If $aKeys[$k] = $sKey Then
+				$iRow = $k
+				ExitLoop
+			EndIf
+		Next
+
+		If $iRow < 0 Then
+			$iRow = UBound($aKeys)
+			ReDim $aKeys[$iRow + 1]
+			ReDim $aTotals[$iRow + 1][3]
+			$aKeys[$iRow] = $sKey
+			Local $sName = CleanItemName($aContent[$i][$READ_COL_NAME])
+			If $sName = "" Or $sName = "Unknown" Then $sName = "Unknown (model " & $aContent[$i][$READ_COL_MODELID] & ")"
+			$aTotals[$iRow][0] = $sName
+			$aTotals[$iRow][1] = 0
+			$aTotals[$iRow][2] = 0
+		EndIf
+
+		$aTotals[$iRow][1] += $aContent[$i][$READ_COL_QUANTITY]
+		$aTotals[$iRow][2] += 1
+	Next
+	If UBound($aTotals) > 1 Then _ArraySort($aTotals)
+	Return $aTotals
+EndFunc
+
+; ===============================================================================
 ; Internal helpers
 ; ===============================================================================
+
+Func _ViewDrawTotals(ByRef $aContent, $x, $y, $iW, $iH)
+	Local $aTotals = BuildItemTotals($aContent)
+
+	Local $idTitle = GUICtrlCreateLabel("Totals (stackable items): " & UBound($aTotals), $x, $y, $iW, 18)
+	GUICtrlSetColor($idTitle, 0xFFFFFF)
+
+	Local $idList = GUICtrlCreateListView("Item|Total|Slots", $x, $y + 22, $iW, $iH - 22)
+	For $i = 0 To UBound($aTotals) - 1
+		GUICtrlCreateListViewItem($aTotals[$i][0] & "|" & $aTotals[$i][1] & "|" & $aTotals[$i][2], $idList)
+	Next
+	_GUICtrlListView_SetColumnWidth($idList, 0, $iW - 125)
+	_GUICtrlListView_SetColumnWidth($idList, 1, 60)
+	_GUICtrlListView_SetColumnWidth($idList, 2, 45)
+EndFunc
 
 ; [bag][slot] -> row of $aContent, -1 when the slot is empty
 Func _ViewBuildIndex(ByRef $aContent)
