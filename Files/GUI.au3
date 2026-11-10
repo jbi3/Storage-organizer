@@ -221,8 +221,33 @@ Func DoSortStep()
 		UpdateStatus("Sort failed - see log for details")
 		LogError("Sort operation failed")
 	EndIf
-	
+
+	; Show the result of the sort, whether it succeeded or not
+	Local $sStatus = GUICtrlRead($g_lblStatus)
+	UpdateStatus("Reading account content...")
+	RefreshViewAfterSort($bSuccess)
+	UpdateStatus($sStatus)
+
 	FinishSort()
+EndFunc
+
+; ===============================================================================
+; Re-read the account after a sort and open the view on the actual content
+; One log line only, so the sort log stays as it was
+; ===============================================================================
+Func RefreshViewAfterSort($bSortSucceeded)
+	CloseAccountView()
+
+	Local $aContent = ReadAccountContent()
+	If @error Then
+		LogWarning("View not refreshed: no bag readable")
+		Return
+	EndIf
+
+	LogInfo("View refreshed: " & UBound($aContent) & " items in " & $g_iReadDurationMs & " ms")
+	Local $sTitle = "Account view"
+	If Not $bSortSucceeded Then $sTitle &= " - sort interrupted"
+	ShowAccountView($aContent, $g_aReadBagSlots, $g_hGUI, $sTitle)
 EndFunc
 
 ; ===============================================================================

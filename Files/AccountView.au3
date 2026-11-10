@@ -43,7 +43,7 @@ Global Const $VIEW_PANE_LABELS[14] = ["I", "II", "III", "IV", "V", "VI", "VII", 
 ; Open (or replace) the view window with the content read
 ; $aBagSlots: slot count per bag, indexed like GetReadBags()
 ; ===============================================================================
-Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent)
+Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent, $sTitle = "Account view")
 	CloseAccountView()
 
 	Local $aIndex = _ViewBuildIndex($aContent)
@@ -60,7 +60,7 @@ Func ShowAccountView(ByRef $aContent, ByRef $aBagSlots, $hParent)
 	If 5 * ($VIEW_CELL + $VIEW_GAP) > $iGridHeight Then $iGridHeight = 5 * ($VIEW_CELL + $VIEW_GAP)
 	Local $iHeight = $VIEW_TAB_TOP + $iGridHeight + 2 * $VIEW_MARGIN
 
-	$g_hViewGUI = GUICreate("Account view", $VIEW_WIDTH + $VIEW_TOTALS_WIDTH, $iHeight, -1, -1, -1, -1, $hParent)
+	$g_hViewGUI = GUICreate($sTitle, $VIEW_WIDTH + $VIEW_TOTALS_WIDTH, $iHeight, -1, -1, -1, -1, $hParent)
 	GUISetBkColor($VIEW_COLOR_BACKGROUND, $g_hViewGUI)
 	GUICtrlCreateTab(5, 5, $VIEW_WIDTH - 10, $VIEW_TAB_HEIGHT, $TCS_MULTILINE)
 
