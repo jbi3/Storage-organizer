@@ -3,7 +3,7 @@ sujet: vue-storage-inventaire
 projet: Storage-Organizer
 statut: en-cours
 created: 2026-11-09
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 
 # Vue du coffre et de l'inventaire
@@ -45,11 +45,11 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 - **Fréquence** : à chaque tri.
 
 ### CU4 — Ouvrir la vue quand le contenu est illisible
-- **Déclencheur** : le perso n'est pas connecté, ou il est hors d'un avant-poste, ou le coffre n'est pas encore chargé ⚠️ À confirmer.
+- **Déclencheur** : le perso n'est pas connecté, ou aucun sac n'est lisible (par exemple pendant un chargement de carte). Hors avant-poste et coffre non ouvert ne sont pas des cas : le coffre s'y lit (T1, 2026-11-09).
 - **Parcours** :
   1. JB choisit le perso.
   2. La vue affiche un message clair au lieu d'une grille vide ou fausse ; si une lecture enregistrée existe, elle affiche la dernière lecture datée (CU5).
-- **Résultat** : il sait quoi faire (par exemple aller en avant-poste).
+- **Résultat** : il sait quoi faire (par exemple attendre la fin du chargement et relancer Read).
 - **Fréquence** : ⚠️ À confirmer.
 
 ### CU5 — Consulter hors ligne
@@ -88,7 +88,7 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 - **Then** la vue montre le nouveau rangement, et le tri lui-même n'a pas changé de comportement
 
 ### S4 — Contenu illisible (CU4)
-- **Given** un perso en zone explorable, ou dont le coffre n'est pas chargé
+- **Given** un perso non connecté, ou dont aucun sac n'est lisible
 - **When** JB le choisit
 - **Then** un message dit pourquoi la lecture en direct est impossible et quoi faire, sans grille partielle ; si une lecture enregistrée existe, elle s'affiche avec sa date
 
@@ -122,11 +122,11 @@ Le tri du coffre Xunlai se lance à l'aveugle : le script ne montre ni l'état a
 T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la réponse sur la source des icônes.
 
 - [x] T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief · ✅ 2026-11-09 : dump conforme au jeu, 332 items en 9,8 s (voir « Mesures T1 »)
-- [ ] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions
-- [ ] T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu
-- [ ] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que `ValidateSortingConditions` ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle
-- [ ] T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus)
-- [ ] T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier `Snapshots\` à côté du script, ajouté au `.gitignore` ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date
+- [x] T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions · ✅ 2026-11-10 : validée en jeu par JB (onglet I, Materials, Inventory), voir « Mesures T2 »
+- [x] T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu · ✅ 2026-11-10 : validée en jeu par JB sur 3 items témoins ; liste à droite de la grille, colonnes Item, Total et Slots (nombre de cases occupées, ajoutée pour repérer les doublons)
+- [x] T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté ou qu'aucun sac n'est lisible ; réduite le 2026-11-10 (JB) car hors avant-poste et coffre non ouvert se lisent (T1) · couvre CU4 · fini quand : les 2 cas, provoqués en jeu, affichent leur message sans ouvrir de vue · ✅ 2026-11-10 : validée en jeu par JB (écran de sélection des persos, client fermé)
+- [x] T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus) · ✅ 2026-11-10 : validée en jeu par JB (tri réussi en avant-poste, tri interrompu en zone explorable) ; la vue s'ouvre après chaque tri, choix de JB ; comparaison de logs remplacée par la preuve du diff (moteur de tri identique à `main`, une ligne « View refreshed » ajoutée en fin de tri), proposée sans objection de JB
+- [x] T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier `Snapshots\` à côté du script, ajouté au `.gitignore` ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date · ✅ 2026-11-10 : validée par JB (lecture jeu lancé, puis vue identique jeu fermé, datée dans le titre) ; fichier `Snapshots\<perso>.ini` en UTF-16, un par perso avec le coffre lu ce jour-là
 - [ ] T7 — Icônes comme en jeu : remplacer les cases colorées par les icônes des items, bloquée par la question ouverte sur la source des icônes · couvre CU1 · fini quand : une capture de la vue est visuellement comparable à la capture en jeu sur 1 onglet
 
 ## Hors périmètre
@@ -147,7 +147,7 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - ❓ Fréquence de consultation attendue (CU1, CU2, CU4) ? (JB)
 - ❓ « Quelques secondes » : quel seuil chiffré pour l'affichage complet ? (JB)
 - ❓ Source des icônes d'items et droits de les embarquer dans le dépôt (bloque T7) ? (JB, recherche)
-- ❓ Mise en page : agrandir la fenêtre actuelle (480 × 415) ou ouvrir une seconde fenêtre pour la vue ? (JB)
+- ✅ Mise en page : seconde fenêtre « Account view », ouverte par Read (JB, 2026-11-10).
 - ✅ Conditions de lecture : le coffre se lit en zone explorable et sans avoir ouvert le coffre Xunlai depuis la connexion (T1, 2026-11-09).
 - ❓ Fichier de lecture : un fichier par perso qui garde aussi le coffre lu ce jour-là (proposé), ou un fichier coffre par compte plus un fichier sacs par perso ? Le coffre Xunlai est partagé par le compte, les sacs sont propres à chaque perso. (JB)
 - ❓ Sac d'équipement et objets non réclamés : inclus dans la vue ? (JB)
@@ -183,5 +183,12 @@ T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la
 - Cases : 25 par onglet, 42 pour le coffre de matériaux (positions fixes, avec des trous : cases 8, 19, 29, 32…), 20 pour le sac à dos, 10 pour la bourse de ceinture, 15 pour les sacs 1 et 2.
 - `Name` donne le nom sans la quantité. Certains noms portent des balises de couleur du jeu (`<c=#00FF00>Green Rock Candy</c>`, `<c=@ItemRare>Gold Zaishen Coin</c>`) à retirer à l'affichage (T2). Les inscriptions model 19123 sortent « Unknown ».
 - Rareté : 2621 blanc, 2623 bleu, 2624 or, 2627 vert (constantes `$GC_I_RARITY_*`) ; les inscriptions renvoient 33025, valeur hors constantes : couleur par défaut à prévoir (T2).
+
+**2026-11-10, disposition en jeu et mesures T2** (captures de JB, en jeu puis de la vue) :
+- Onglets du coffre : 5 colonnes × 5 lignes, remplies ligne par ligne ; libellés I à XIII, puis une icône de coffre pour le 14e et un marteau pour les matériaux.
+- Coffre de matériaux : 3 colonnes × 12 lignes, 36 matériaux « quantité + icône », les absents affichés à 0 ; les cases internes 8, 29 et 39 à 42 ne sont pas affichées (déduit de l'alignement capture / dump, confirmé par la vue : les deux 0 tombent aux mêmes places qu'en jeu).
+- Sacs (fenêtre F9) : une grille de 5 colonnes, chaque sac commence une nouvelle ligne (sac à dos lignes 1-4, bourse 5-6, sac 1 7-9, sac 2 10-12).
+- Vue validée : mêmes items aux mêmes positions sur l'onglet I, Materials et Inventory. Premier rendu peu lisible (items blancs fondus dans le fond clair, 16 onglets tronqués) : corrigé par un fond sombre et des onglets sur deux lignes.
+- Limite connue jusqu'à T7 : sans icônes, deux piles blanches de même quantité ne se distinguent qu'au survol.
 
 **2026-11-08** (note d'origine, session Item-spammer) : vue du storage et de l'inventaire identique à la vue en jeu, pour mieux voir le tri ; choix de l'ordre du tri et du placement final dans les stockages.

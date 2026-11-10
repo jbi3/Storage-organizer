@@ -2,3 +2,6 @@
 
 Docs/*
 !Docs/specs/
+
+# Saved readings of the account view (local game data)
+Snapshots/

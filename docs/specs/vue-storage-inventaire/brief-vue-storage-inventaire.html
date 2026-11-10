@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-prdview="brief:vue-storage-inventaire:2026-11-09" data-prdview-title="Vue du coffre et de l&#x27;inventaire" data-prdview-source="C:/Users/jeanb/Desktop/GW/GwAu3-main/Scripts/Storage-Organizer/.claude/worktrees/storage-inventory-ui-view-1c2f5a/docs/specs/vue-storage-inventaire/brief-vue-storage-inventaire.md (updated 2026-11-09)">
+<html lang="fr" data-prdview="brief:vue-storage-inventaire:2026-11-10" data-prdview-title="Vue du coffre et de l&#x27;inventaire" data-prdview-source="C:/Users/jeanb/Desktop/GW/GwAu3-main/Scripts/Storage-Organizer/.claude/worktrees/storage-inventory-ui-view-1c2f5a/docs/specs/vue-storage-inventaire/brief-vue-storage-inventaire.md (updated 2026-11-10)">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -406,7 +406,7 @@ body.has-export-bar{padding-bottom:88px}
     <p class="label" style="color:#fff;opacity:.85">Brief · Storage-Organizer</p>
     <h1>Vue du coffre et de l&#x27;inventaire</h1>
     <p class="lead small">Vue de lecture générée depuis <code style="background:rgba(255,255,255,.18);color:#fff">brief-vue-storage-inventaire.md</code>. Le fichier .md reste la source.</p>
-    <div class="row"><span class="badge">Storage-Organizer</span><span class="badge badge-info">en-cours</span><span class="badge">mis à jour 2026-11-09</span></div>
+    <div class="row"><span class="badge">Storage-Organizer</span><span class="badge badge-info">en-cours</span><span class="badge">mis à jour 2026-11-10</span></div>
   </div>
 </header>
 
@@ -474,14 +474,14 @@ body.has-export-bar{padding-bottom:88px}
 <li><strong>Fréquence</strong> : à chaque tri.</li>
 </ul>
 <h3 data-checkable data-key="cu4-ouvrir-la-vue-quand-le-contenu-est-illisible">CU4 — Ouvrir la vue quand le contenu est illisible</h3><ul>
-<li><strong>Déclencheur</strong> : le perso n'est pas connecté, ou il est hors d'un avant-poste, ou le coffre n'est pas encore chargé <span class="mark-warn">⚠️</span> À confirmer.</li>
+<li><strong>Déclencheur</strong> : le perso n'est pas connecté, ou aucun sac n'est lisible (par exemple pendant un chargement de carte). Hors avant-poste et coffre non ouvert ne sont pas des cas : le coffre s'y lit (T1, 2026-11-09).</li>
 <li><strong>Parcours</strong> :
 <ol>
 <li>JB choisit le perso.</li>
 <li>La vue affiche un message clair au lieu d'une grille vide ou fausse ; si une lecture enregistrée existe, elle affiche la dernière lecture datée (CU5).</li>
 </ol>
 </li>
-<li><strong>Résultat</strong> : il sait quoi faire (par exemple aller en avant-poste).</li>
+<li><strong>Résultat</strong> : il sait quoi faire (par exemple attendre la fin du chargement et relancer Read).</li>
 <li><strong>Fréquence</strong> : <span class="mark-warn">⚠️</span> À confirmer.</li>
 </ul>
 <h3 data-checkable data-key="cu5-consulter-hors-ligne">CU5 — Consulter hors ligne</h3><ul>
@@ -553,7 +553,7 @@ body.has-export-bar{padding-bottom:88px}
 <li><strong>Then</strong> la vue montre le nouveau rangement, et le tri lui-même n'a pas changé de comportement</li>
 </ul>
 </div></details><details class="accordion-item"><summary>S4 — Contenu illisible (CU4)</summary><div class="accordion-body prose"><ul>
-<li><strong>Given</strong> un perso en zone explorable, ou dont le coffre n'est pas chargé</li>
+<li><strong>Given</strong> un perso non connecté, ou dont aucun sac n'est lisible</li>
 <li><strong>When</strong> JB le choisit</li>
 <li><strong>Then</strong> un message dit pourquoi la lecture en direct est impossible et quoi faire, sans grille partielle ; si une lecture enregistrée existe, elle s'affiche avec sa date</li>
 </ul>
@@ -585,11 +585,11 @@ body.has-export-bar{padding-bottom:88px}
 </div></details></div></section><section class="tabs-content" id="tab-taches" data-tab-label="Tâches"><section class="prose"><h2>Tâches</h2><p>T1 à T6 forment un seul lot, livré dans l'ordre, sans échéance. T7 attend la réponse sur la source des icônes.</p>
 <ul>
 <li data-checkable data-key="taches-1">T1 — Lire le contenu du compte : une fonction renvoie, pour les onglets 8 à 21, le coffre de matériaux et les 4 sacs, chaque case remplie (sac, case, ModelID, nom, quantité, rareté), sans aucun déplacement ; tester en jeu la lisibilité hors avant-poste et sans coffre ouvert, et mesurer la durée de lecture d'un coffre plein · couvre CU1, CU2 · fini quand : le dump dans le log correspond case par case à 3 onglets et 1 sac vérifiés en jeu, et la durée mesurée est notée dans le brief · ✅ 2026-11-09 : dump conforme au jeu, 332 items en 9,8 s (voir « Mesures T1 »)</li>
-<li data-checkable data-key="taches-2">T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions</li>
-<li data-checkable data-key="taches-3">T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu</li>
-<li data-checkable data-key="taches-4">T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté, est hors avant-poste ou que son coffre n'est pas chargé, avec les mêmes conditions que <code>ValidateSortingConditions</code> ; le critère « coffre non chargé » est fixé d'après les tests de T1 · couvre CU4 · fini quand : chacun des 3 cas, provoqué en jeu, affiche son message sans grille partielle</li>
-<li data-checkable data-key="taches-5">T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus)</li>
-<li data-checkable data-key="taches-6">T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier <code>Snapshots\</code> à côté du script, ajouté au <code>.gitignore</code> ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date</li>
+<li data-checkable data-key="taches-2">T2 — Afficher la grille : onglets, coffre de matériaux et sacs en cases positionnées comme en jeu, colorées par rareté, nom au survol, quantité affichée, case illisible grisée avec « ? », nombre de colonnes relevé sur une capture en jeu, en AutoIt natif · couvre CU1, CU2 · fini quand : une capture de la vue et une capture en jeu du même onglet montrent les mêmes items aux mêmes positions · ✅ 2026-11-10 : validée en jeu par JB (onglet I, Materials, Inventory), voir « Mesures T2 »</li>
+<li data-checkable data-key="taches-3">T3 — Liste des totaux par item : cumul coffre + matériaux + sacs du perso affiché, items empilables seulement, par ModelID et ExtraID · couvre CU2 · fini quand : 3 items témoins répartis sur plusieurs onglets affichent le total compté en jeu · ✅ 2026-11-10 : validée en jeu par JB sur 3 items témoins ; liste à droite de la grille, colonnes Item, Total et Slots (nombre de cases occupées, ajoutée pour repérer les doublons)</li>
+<li data-checkable data-key="taches-4">T4 — États « illisible » : message au lieu de la grille quand le perso n'est pas connecté ou qu'aucun sac n'est lisible ; réduite le 2026-11-10 (JB) car hors avant-poste et coffre non ouvert se lisent (T1) · couvre CU4 · fini quand : les 2 cas, provoqués en jeu, affichent leur message sans ouvrir de vue · ✅ 2026-11-10 : validée en jeu par JB (écran de sélection des persos, client fermé)</li>
+<li data-checkable data-key="taches-5">T5 — Mise à jour après tri : la vue se relit à la fin de Start, en succès comme en échec (mention « tri interrompu ») · couvre CU3 · fini quand : captures avant et après un tri différentes comme attendu, S8 provoqué en jeu, et log du tri identique à celui d'avant le chantier sur un coffre identique (mêmes lignes, horodatages exclus) · ✅ 2026-11-10 : validée en jeu par JB (tri réussi en avant-poste, tri interrompu en zone explorable) ; la vue s'ouvre après chaque tri, choix de JB ; comparaison de logs remplacée par la preuve du diff (moteur de tri identique à <code>main</code>, une ligne « View refreshed » ajoutée en fin de tri), proposée sans objection de JB</li>
+<li data-checkable data-key="taches-6">T6 — Enregistrer et relire la dernière lecture : après chaque lecture réussie, écrire un fichier INI par perso dans un dossier <code>Snapshots\</code> à côté du script, ajouté au <code>.gitignore</code> ; hors ligne, la liste des persos inclut ceux qui ont un fichier, et la vue le relit ; un fichier illisible est traité comme absent · couvre CU5, CU4 · fini quand : jeu fermé, la vue affiche la même grille et les mêmes totaux qu'à la dernière lecture en ligne, avec sa date · ✅ 2026-11-10 : validée par JB (lecture jeu lancé, puis vue identique jeu fermé, datée dans le titre) ; fichier <code>Snapshots\&lt;perso&gt;.ini</code> en UTF-16, un par perso avec le coffre lu ce jour-là</li>
 <li data-checkable data-key="taches-7">T7 — Icônes comme en jeu : remplacer les cases colorées par les icônes des items, bloquée par la question ouverte sur la source des icônes · couvre CU1 · fini quand : une capture de la vue est visuellement comparable à la capture en jeu sur 1 onglet</li>
 </ul>
 </section></section><section class="tabs-content" id="tab-questions" data-tab-label="Questions"><section class="prose"><h2>Hors périmètre</h2><ul>
@@ -608,7 +608,7 @@ body.has-export-bar{padding-bottom:88px}
 <li data-checkable data-key="questions-ouvertes-3"><span class="mark-q">❓</span> Fréquence de consultation attendue (CU1, CU2, CU4) ? (JB)</li>
 <li data-checkable data-key="questions-ouvertes-4"><span class="mark-q">❓</span> « Quelques secondes » : quel seuil chiffré pour l'affichage complet ? (JB)</li>
 <li data-checkable data-key="questions-ouvertes-5"><span class="mark-q">❓</span> Source des icônes d'items et droits de les embarquer dans le dépôt (bloque T7) ? (JB, recherche)</li>
-<li data-checkable data-key="questions-ouvertes-6"><span class="mark-q">❓</span> Mise en page : agrandir la fenêtre actuelle (480 × 415) ou ouvrir une seconde fenêtre pour la vue ? (JB)</li>
+<li data-checkable data-key="questions-ouvertes-6">✅ Mise en page : seconde fenêtre « Account view », ouverte par Read (JB, 2026-11-10).</li>
 <li data-checkable data-key="questions-ouvertes-7">✅ Conditions de lecture : le coffre se lit en zone explorable et sans avoir ouvert le coffre Xunlai depuis la connexion (T1, 2026-11-09).</li>
 <li data-checkable data-key="questions-ouvertes-8"><span class="mark-q">❓</span> Fichier de lecture : un fichier par perso qui garde aussi le coffre lu ce jour-là (proposé), ou un fichier coffre par compte plus un fichier sacs par perso ? Le coffre Xunlai est partagé par le compte, les sacs sont propres à chaque perso. (JB)</li>
 <li data-checkable data-key="questions-ouvertes-9"><span class="mark-q">❓</span> Sac d'équipement et objets non réclamés : inclus dans la vue ? (JB)</li>
@@ -644,6 +644,14 @@ body.has-export-bar{padding-bottom:88px}
 <li>Cases : 25 par onglet, 42 pour le coffre de matériaux (positions fixes, avec des trous : cases 8, 19, 29, 32…), 20 pour le sac à dos, 10 pour la bourse de ceinture, 15 pour les sacs 1 et 2.</li>
 <li><code>Name</code> donne le nom sans la quantité. Certains noms portent des balises de couleur du jeu (<code>&lt;c=#00FF00&gt;Green Rock Candy&lt;/c&gt;</code>, <code>&lt;c=@ItemRare&gt;Gold Zaishen Coin&lt;/c&gt;</code>) à retirer à l'affichage (T2). Les inscriptions model 19123 sortent « Unknown ».</li>
 <li>Rareté : 2621 blanc, 2623 bleu, 2624 or, 2627 vert (constantes <code>$GC_I_RARITY_*</code>) ; les inscriptions renvoient 33025, valeur hors constantes : couleur par défaut à prévoir (T2).</li>
+</ul>
+<p><strong>2026-11-10, disposition en jeu et mesures T2</strong> (captures de JB, en jeu puis de la vue) :</p>
+<ul>
+<li>Onglets du coffre : 5 colonnes × 5 lignes, remplies ligne par ligne ; libellés I à XIII, puis une icône de coffre pour le 14e et un marteau pour les matériaux.</li>
+<li>Coffre de matériaux : 3 colonnes × 12 lignes, 36 matériaux « quantité + icône », les absents affichés à 0 ; les cases internes 8, 29 et 39 à 42 ne sont pas affichées (déduit de l'alignement capture / dump, confirmé par la vue : les deux 0 tombent aux mêmes places qu'en jeu).</li>
+<li>Sacs (fenêtre F9) : une grille de 5 colonnes, chaque sac commence une nouvelle ligne (sac à dos lignes 1-4, bourse 5-6, sac 1 7-9, sac 2 10-12).</li>
+<li>Vue validée : mêmes items aux mêmes positions sur l'onglet I, Materials et Inventory. Premier rendu peu lisible (items blancs fondus dans le fond clair, 16 onglets tronqués) : corrigé par un fond sombre et des onglets sur deux lignes.</li>
+<li>Limite connue jusqu'à T7 : sans icônes, deux piles blanches de même quantité ne se distinguent qu'au survol.</li>
 </ul>
 <p><strong>2026-11-08</strong> (note d'origine, session Item-spammer) : vue du storage et de l'inventaire identique à la vue en jeu, pour mieux voir le tri ; choix de l'ordre du tri et du placement final dans les stockages.</p>
 </section></section>

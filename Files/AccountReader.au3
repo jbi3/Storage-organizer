@@ -8,7 +8,7 @@
 
 ; Column indices of the content array returned by ReadAccountContent()
 Global Enum $READ_COL_BAG = 0, $READ_COL_SLOT, $READ_COL_MODELID, $READ_COL_EXTRAID, _
-	$READ_COL_NAME, $READ_COL_QUANTITY, $READ_COL_RARITY, $READ_COL_COUNT
+	$READ_COL_NAME, $READ_COL_QUANTITY, $READ_COL_RARITY, $READ_COL_STACKABLE, $READ_COL_COUNT
 
 ; Slot count of each bag from the last read, indexed like GetReadBags()
 Global $g_aReadBagSlots[0]
@@ -81,6 +81,7 @@ Func ReadAccountContent()
 			$aContent[$iCount][$READ_COL_NAME] = Item_GetItemInfoByPtr($pItem, "Name")
 			$aContent[$iCount][$READ_COL_QUANTITY] = Item_GetItemInfoByPtr($pItem, "Quantity")
 			$aContent[$iCount][$READ_COL_RARITY] = Item_GetItemInfoByPtr($pItem, "Rarity")
+			$aContent[$iCount][$READ_COL_STACKABLE] = Item_GetItemInfoByPtr($pItem, "IsStackable")
 			$iCount += 1
 		Next
 	Next
